@@ -275,27 +275,50 @@
           <span class="eyebrow">Does the agent have the correct context?</span>
         </div>
 
-        <div class="question-grid reveal">
-          <article class="question-card">
-            <h3>Can it find the canonical implementation?</h3>
-            <p>If a symbol is implemented in a shared service or hidden behind an interface, the agent should still land on the real source of truth instead of a nearby lookalike.</p>
-            <p class="answer">Good retrieval reduces exploration cost before the model spends tokens reasoning.</p>
-          </article>
-          <article class="question-card">
-            <h3>Can it trace blast radius across repositories?</h3>
-            <p>The agent should know who calls the thing being changed, which consumers are downstream, and where the migration risk actually sits.</p>
-            <p class="answer">This is where file access alone stops being enough.</p>
-          </article>
-          <article class="question-card">
-            <h3>Can it bring in history and conventions without flooding the window?</h3>
-            <p>Retrieval quality is precision, not volume. The system should surface the few artifacts that explain prior intent, ownership, and the existing team pattern.</p>
-            <p class="answer">Too much context is another form of failure.</p>
-          </article>
-          <article class="question-card">
-            <h3>Can it explain the answer with evidence?</h3>
-            <p>A trustworthy output points back to paths, symbols, references, or history. It should feel inspectable, not magical.</p>
-            <p class="answer">The reviewer should be able to verify how the agent knew what it knew.</p>
-          </article>
+        <div class="context-audit panel reveal">
+          <div class="context-audit-intro">
+            <p class="lede">
+              A good answer depends on more than file access. It depends on reaching the real implementation, understanding impact, pulling the right history, and showing its work.
+            </p>
+          </div>
+
+          <div class="context-audit-list" aria-label="Context audit checks">
+            <article class="context-check">
+              <span class="context-check-index">01</span>
+              <div class="context-check-copy">
+                <h3>Can it find the canonical implementation?</h3>
+                <p>If a symbol is implemented in a shared service or hidden behind an interface, the agent should still land on the real source of truth instead of a nearby lookalike.</p>
+              </div>
+              <p class="context-check-note">Find the actual source of truth before reasoning starts.</p>
+            </article>
+
+            <article class="context-check">
+              <span class="context-check-index">02</span>
+              <div class="context-check-copy">
+                <h3>Can it trace blast radius across repositories?</h3>
+                <p>The agent should know who calls the thing being changed, which consumers are downstream, and where the migration risk actually sits.</p>
+              </div>
+              <p class="context-check-note">File access alone stops being enough at repository boundaries.</p>
+            </article>
+
+            <article class="context-check">
+              <span class="context-check-index">03</span>
+              <div class="context-check-copy">
+                <h3>Can it explain the answer with evidence?</h3>
+                <p>A trustworthy output points back to paths, symbols, references, or history. It should feel inspectable, not magical.</p>
+              </div>
+              <p class="context-check-note">A reviewer should be able to verify how the agent knew what it knew.</p>
+            </article>
+
+            <article class="context-check">
+              <span class="context-check-index">04</span>
+              <div class="context-check-copy">
+                <h3>Can it bring in history and conventions without flooding the window?</h3>
+                <p>Retrieval quality is precision, not volume. The system should surface the few artifacts that explain prior intent, ownership, and the existing team pattern.</p>
+              </div>
+              <p class="context-check-note">Too much context is another form of failure.</p>
+            </article>
+          </div>
         </div>
       </div>
     </section>
