@@ -3,524 +3,1051 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sourcegraph MCP Guide | Connect Agents to Real Codebase Context</title>
-  <meta name="description" content="A practical guide to using Sourcegraph as an MCP server: endpoints, host configuration, authentication, tool calling, and the core Sourcegraph capabilities available to AI coding agents.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffe0a3'/%3E%3Cstop offset='100%25' stop-color='%2369d9d0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='%23040506'/%3E%3Ccircle cx='32' cy='32' r='16' fill='url(%23g)'/%3E%3Ccircle cx='27' cy='26' r='5' fill='white' fill-opacity='.9'/%3E%3C/svg%3E">
+  <title>Sourcegraph MCP | Ask Agents To Investigate Real Code</title>
+  <meta name="description" content="Use Sourcegraph MCP to investigate codebases with search, navigation, history, and evidence-backed prompting patterns.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ff8c5a'/%3E%3Cstop offset='100%25' stop-color='%23ffd36d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='%23040506'/%3E%3Cpath d='M18 20c4-6 12-10 20-10 5 0 9 1 12 3l-8 9c-2-1-5-2-8-2-6 0-11 3-14 8l-2 4-9-3 9-9Z' fill='url(%23g)'/%3E%3Cpath d='M46 44c-4 6-12 10-20 10-5 0-9-1-12-3l8-9c2 1 5 2 8 2 6 0 11-3 14-8l2-4 9 3-9 9Z' fill='%23ffe7c9'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://cdn.prod.website-files.com" crossorigin>
   <link rel="stylesheet" href="./assets/site.css">
+  <style>
+    .mcp-guide-page {
+      --mcp-accent: #ff6a3d;
+      --mcp-accent-soft: #ffc96b;
+      --mcp-paper: #f5ece2;
+      --mcp-ink: #171312;
+      --mcp-muted: rgba(245, 236, 226, 0.74);
+      --mcp-line: rgba(255, 255, 255, 0.12);
+      --mcp-surface: rgba(255, 248, 240, 0.05);
+      position: relative;
+    }
+
+    .mcp-guide-page::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 15% 12%, rgba(255, 106, 61, 0.18), transparent 24%),
+        radial-gradient(circle at 80% 10%, rgba(255, 201, 107, 0.12), transparent 22%),
+        radial-gradient(circle at 55% 55%, rgba(255, 255, 255, 0.03), transparent 36%);
+      opacity: 0.95;
+    }
+
+    .mcp-guide-page .container {
+      position: relative;
+      z-index: 1;
+    }
+
+    .mcp-hero {
+      position: relative;
+      min-height: 100vh;
+      padding: 7.4rem 0 3rem;
+      overflow: clip;
+      display: flex;
+      align-items: center;
+      background:
+        linear-gradient(180deg, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0)),
+        radial-gradient(circle at 50% 18%, rgba(255, 180, 122, 0.12), transparent 22%);
+    }
+
+    .mcp-hero::before,
+    .mcp-hero::after {
+      content: "";
+      position: absolute;
+      inset: auto;
+      border-radius: 999px;
+      filter: blur(0);
+      opacity: 0.9;
+      animation: mcpFloat 14s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .mcp-hero::before {
+      width: 26rem;
+      height: 26rem;
+      top: 10%;
+      right: -4rem;
+      background: radial-gradient(circle, rgba(255, 106, 61, 0.24), rgba(255, 106, 61, 0));
+    }
+
+    .mcp-hero::after {
+      width: 24rem;
+      height: 24rem;
+      bottom: 6%;
+      left: -6rem;
+      background: radial-gradient(circle, rgba(255, 201, 107, 0.16), rgba(255, 201, 107, 0));
+      animation-delay: -7s;
+    }
+
+    .mcp-hero-layout {
+      position: relative;
+      display: grid;
+      align-items: end;
+      grid-template-columns: minmax(0, 0.95fr) minmax(20rem, 0.9fr);
+      gap: 2rem;
+    }
+
+    .mcp-hero-copy {
+      max-width: 42rem;
+      padding-bottom: 2rem;
+    }
+
+    .mcp-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 1.25rem;
+      color: var(--mcp-accent-soft);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .mcp-kicker::before {
+      content: "";
+      width: 0.55rem;
+      height: 0.55rem;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 18px currentColor;
+    }
+
+    .mcp-brand {
+      margin: 0;
+      font-size: clamp(3.8rem, 10vw, 7.5rem);
+      line-height: 0.9;
+      letter-spacing: -0.07em;
+      font-weight: 700;
+      color: var(--mcp-paper);
+    }
+
+    .mcp-brand span {
+      display: block;
+      color: rgba(245, 236, 226, 0.38);
+    }
+
+    .mcp-hero h1 {
+      margin: 1.15rem 0 1rem;
+      max-width: 12ch;
+      font-family: var(--display);
+      font-size: clamp(2rem, 4vw, 3.45rem);
+      font-weight: 500;
+      line-height: 0.96;
+      letter-spacing: -0.05em;
+    }
+
+    .mcp-hero .lede {
+      max-width: 58ch;
+      color: var(--mcp-muted);
+      font-size: 1.05rem;
+    }
+
+    .mcp-hero-visual {
+      position: relative;
+      min-height: min(72vh, 44rem);
+      border-radius: 2.4rem;
+      overflow: hidden;
+      isolation: isolate;
+      background:
+        linear-gradient(135deg, rgba(255, 248, 240, 0.07), rgba(255, 248, 240, 0.015)),
+        radial-gradient(circle at 18% 20%, rgba(255, 106, 61, 0.24), transparent 28%),
+        radial-gradient(circle at 82% 14%, rgba(255, 201, 107, 0.18), transparent 22%),
+        linear-gradient(180deg, rgba(14, 12, 11, 0.8), rgba(5, 5, 6, 0.98));
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: 0 40px 90px rgba(0, 0, 0, 0.42);
+    }
+
+    .mcp-hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+      background-size: 4rem 4rem;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.9), transparent 92%);
+      opacity: 0.35;
+    }
+
+    .mcp-command-stack {
+      position: absolute;
+      inset: 1.4rem;
+      display: grid;
+      align-content: end;
+      gap: 0.8rem;
+      z-index: 1;
+    }
+
+    .mcp-command {
+      width: max-content;
+      max-width: min(92%, 36rem);
+      padding: 0.78rem 1rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 1rem;
+      background: rgba(11, 10, 11, 0.8);
+      backdrop-filter: blur(14px);
+      color: #f7efe6;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      line-height: 1.55;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      animation: mcpRise 900ms ease both;
+    }
+
+    .mcp-command:nth-child(2) {
+      margin-left: 2.6rem;
+      animation-delay: 160ms;
+    }
+
+    .mcp-command:nth-child(3) {
+      margin-left: 1rem;
+      animation-delay: 300ms;
+    }
+
+    .mcp-command:nth-child(4) {
+      margin-left: 4rem;
+      animation-delay: 440ms;
+    }
+
+    .mcp-command strong {
+      color: var(--mcp-accent-soft);
+      font-weight: 400;
+    }
+
+    .mcp-hero-answer {
+      position: absolute;
+      top: 1.6rem;
+      right: 1.6rem;
+      width: min(70%, 28rem);
+      padding: 1.3rem 1.35rem 1.25rem;
+      border-radius: 1.25rem;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: linear-gradient(180deg, rgba(255, 248, 240, 0.95), rgba(238, 228, 217, 0.88));
+      color: var(--mcp-ink);
+      box-shadow: 0 22px 70px rgba(0, 0, 0, 0.3);
+      transform: rotate(-3deg);
+    }
+
+    .mcp-hero-answer p {
+      margin: 0;
+      line-height: 1.6;
+      color: rgba(23, 19, 18, 0.8);
+    }
+
+    .mcp-hero-answer strong {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 0.82rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(23, 19, 18, 0.6);
+    }
+
+    .mcp-section {
+      position: relative;
+      padding: 5.8rem 0;
+    }
+
+    .mcp-section::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.12), transparent);
+      opacity: 0.55;
+    }
+
+    .mcp-section-heading {
+      max-width: 52rem;
+      margin-bottom: 2.6rem;
+    }
+
+    .mcp-section-heading h2 {
+      margin: 1rem 0 0.9rem;
+      font-family: var(--display);
+      font-size: clamp(2.1rem, 4vw, 3.8rem);
+      font-weight: 500;
+      line-height: 0.96;
+      letter-spacing: -0.05em;
+    }
+
+    .mcp-comparison {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 3rem;
+      position: relative;
+      padding-top: 1rem;
+    }
+
+    .mcp-comparison::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 1px;
+      background: linear-gradient(180deg, transparent, rgba(255, 106, 61, 0.75) 18%, rgba(255, 106, 61, 0.75) 82%, transparent);
+      opacity: 0.75;
+    }
+
+    .mcp-side h3 {
+      margin: 0 0 1.15rem;
+      font-size: clamp(2rem, 3.5vw, 3.1rem);
+      line-height: 1;
+      letter-spacing: -0.05em;
+    }
+
+    .mcp-side p,
+    .mcp-side li,
+    .mcp-rule-copy p,
+    .mcp-evidence-panel p,
+    .mcp-config-note,
+    .mcp-reference-list a {
+      color: var(--mcp-muted);
+      line-height: 1.7;
+    }
+
+    .mcp-side ul {
+      margin: 1.2rem 0 0;
+      padding-left: 1.2rem;
+    }
+
+    .mcp-side li + li {
+      margin-top: 0.55rem;
+    }
+
+    .mcp-side blockquote {
+      margin: 2rem 0 0;
+      padding: 0;
+      border: 0;
+      font-size: clamp(1.25rem, 2vw, 1.7rem);
+      line-height: 1.3;
+      letter-spacing: -0.03em;
+      color: var(--mcp-paper);
+    }
+
+    .mcp-side.without h3,
+    .mcp-rule-number {
+      color: var(--mcp-accent);
+    }
+
+    .mcp-side.with h3 {
+      color: var(--mcp-accent-soft);
+    }
+
+    .mcp-tool-groups {
+      display: grid;
+      gap: 1.1rem;
+    }
+
+    .mcp-tool-group {
+      display: grid;
+      grid-template-columns: minmax(10rem, 0.32fr) minmax(0, 1fr);
+      gap: 1.4rem;
+      padding: 1.35rem 0;
+      border-bottom: 1px solid var(--mcp-line);
+    }
+
+    .mcp-tool-group:first-child {
+      border-top: 1px solid var(--mcp-line);
+    }
+
+    .mcp-tool-group h3 {
+      margin: 0;
+      font-size: 1rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: rgba(245, 236, 226, 0.56);
+    }
+
+    .mcp-tool-list {
+      display: grid;
+      gap: 0.95rem;
+    }
+
+    .mcp-tool {
+      display: grid;
+      grid-template-columns: minmax(0, 22rem) minmax(0, 1fr);
+      gap: 1.2rem;
+      align-items: start;
+    }
+
+    .mcp-tool code {
+      display: block;
+      color: var(--mcp-paper);
+      font-size: 0.84rem;
+      line-height: 1.55;
+      white-space: normal;
+      word-break: break-word;
+    }
+
+    .mcp-tool p {
+      margin: 0;
+      color: var(--mcp-muted);
+      line-height: 1.7;
+    }
+
+    .mcp-rules {
+      display: grid;
+      gap: 2rem;
+    }
+
+    .mcp-rule {
+      display: grid;
+      grid-template-columns: minmax(3rem, 4.5rem) minmax(0, 1fr);
+      gap: 1.2rem;
+      padding: 1.6rem 0;
+      border-top: 1px solid var(--mcp-line);
+    }
+
+    .mcp-rule:last-child {
+      border-bottom: 1px solid var(--mcp-line);
+    }
+
+    .mcp-rule-number {
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      line-height: 1;
+      font-weight: 700;
+      letter-spacing: -0.05em;
+    }
+
+    .mcp-rule-copy {
+      display: grid;
+      gap: 0.85rem;
+      max-width: 56rem;
+    }
+
+    .mcp-rule-copy h3 {
+      margin: 0;
+      font-size: clamp(1.45rem, 2.4vw, 2.35rem);
+      line-height: 1.04;
+      letter-spacing: -0.04em;
+    }
+
+    .mcp-rule-copy ul {
+      margin: 0;
+      padding-left: 1.2rem;
+      color: var(--mcp-muted);
+      line-height: 1.7;
+    }
+
+    .mcp-rule-copy li + li {
+      margin-top: 0.45rem;
+    }
+
+    .mcp-rule-copy p {
+      margin: 0;
+      max-width: 56rem;
+    }
+
+    .mcp-emphasis {
+      color: var(--mcp-paper);
+      font-weight: 700;
+      font-style: italic;
+    }
+
+    .mcp-evidence {
+      display: grid;
+      grid-template-columns: minmax(0, 1.05fr) minmax(18rem, 0.75fr);
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    .mcp-terminal,
+    .mcp-evidence-panel,
+    .mcp-config-shell {
+      position: relative;
+      overflow: hidden;
+      border-radius: 1.8rem;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background:
+        linear-gradient(180deg, rgba(18, 22, 26, 0.9), rgba(8, 10, 12, 0.95)),
+        rgba(255, 255, 255, 0.02);
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.4);
+    }
+
+    .mcp-terminal::before,
+    .mcp-evidence-panel::before,
+    .mcp-config-shell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: linear-gradient(145deg, rgba(255, 255, 255, 0.18), rgba(255, 255, 255, 0.05) 34%, transparent 60%, rgba(255, 201, 107, 0.2) 100%);
+      -webkit-mask:
+        linear-gradient(#fff 0 0) content-box,
+        linear-gradient(#fff 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      pointer-events: none;
+    }
+
+    .mcp-terminal {
+      padding: 1.45rem 1.45rem 1.55rem;
+    }
+
+    .mcp-terminal-bar,
+    .config-topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .mcp-terminal-dots {
+      display: flex;
+      gap: 0.45rem;
+    }
+
+    .mcp-terminal-dots span {
+      width: 0.7rem;
+      height: 0.7rem;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .mcp-terminal-dots span:first-child {
+      background: rgba(255, 106, 61, 0.95);
+    }
+
+    .mcp-terminal-dots span:nth-child(2) {
+      background: rgba(255, 201, 107, 0.9);
+    }
+
+    .mcp-terminal-title {
+      color: rgba(245, 236, 226, 0.6);
+      font-family: var(--mono);
+      font-size: 0.77rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .mcp-terminal pre,
+    .mcp-config-shell pre {
+      margin: 0;
+      overflow-x: auto;
+      color: #f2ece5;
+      font-size: 0.83rem;
+      line-height: 1.7;
+    }
+
+    .mcp-evidence-panel {
+      padding: 1.45rem;
+      display: grid;
+      gap: 1rem;
+    }
+
+    .mcp-evidence-panel h3,
+    .mcp-config-note h3 {
+      margin: 0;
+      font-size: 1.5rem;
+      line-height: 1.05;
+      letter-spacing: -0.04em;
+    }
+
+    .mcp-checklist {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+      display: grid;
+      gap: 0.8rem;
+    }
+
+    .mcp-checklist li {
+      position: relative;
+      padding-left: 1.25rem;
+      color: var(--mcp-muted);
+      line-height: 1.65;
+    }
+
+    .mcp-checklist li::before {
+      content: "";
+      position: absolute;
+      top: 0.68rem;
+      left: 0;
+      width: 0.45rem;
+      height: 0.45rem;
+      border-radius: 50%;
+      background: var(--mcp-accent-soft);
+      box-shadow: 0 0 16px rgba(255, 201, 107, 0.4);
+    }
+
+    .mcp-config-layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(17rem, 0.42fr);
+      gap: 1.4rem;
+      align-items: start;
+    }
+
+    .mcp-config-shell {
+      padding: 1.35rem;
+    }
+
+    .mcp-config-note {
+      padding: 1.45rem 0;
+    }
+
+    .mcp-config-note p {
+      margin: 0 0 1rem;
+    }
+
+    .mcp-reference-list {
+      display: grid;
+      gap: 0.9rem;
+      margin-top: 1rem;
+    }
+
+    .mcp-reference-list a {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      width: fit-content;
+      color: var(--mcp-paper);
+      font-weight: 600;
+    }
+
+    .mcp-reference-list a::after {
+      content: "->";
+      color: var(--mcp-accent-soft);
+      transition: transform 180ms ease;
+    }
+
+    .mcp-reference-list a:hover::after {
+      transform: translateX(4px);
+    }
+
+    @keyframes mcpFloat {
+      0%, 100% {
+        transform: translate3d(0, 0, 0);
+      }
+      50% {
+        transform: translate3d(0, 1.5rem, 0);
+      }
+    }
+
+    @keyframes mcpRise {
+      from {
+        opacity: 0;
+        transform: translate3d(0, 20px, 0);
+      }
+      to {
+        opacity: 1;
+        transform: translate3d(0, 0, 0);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mcp-hero::before,
+      .mcp-hero::after,
+      .mcp-command {
+        animation: none;
+      }
+    }
+
+    @media (max-width: 1040px) {
+      .mcp-hero {
+        min-height: auto;
+        padding-top: 7rem;
+      }
+
+      .mcp-hero-layout,
+      .mcp-evidence,
+      .mcp-config-layout {
+        grid-template-columns: 1fr;
+      }
+
+      .mcp-hero-copy {
+        padding-bottom: 0;
+      }
+
+      .mcp-hero-visual {
+        min-height: 34rem;
+      }
+
+      .mcp-comparison {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+
+      .mcp-comparison::before {
+        left: 0;
+        right: 0;
+        top: 50%;
+        bottom: auto;
+        width: auto;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255, 106, 61, 0.75) 18%, rgba(255, 106, 61, 0.75) 82%, transparent);
+      }
+
+      .mcp-tool-group,
+      .mcp-tool {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .mcp-hero {
+        padding: 6.6rem 0 4.5rem;
+      }
+
+      .mcp-brand {
+        font-size: clamp(3rem, 18vw, 4.6rem);
+      }
+
+      .mcp-hero h1 {
+        max-width: 13ch;
+        font-size: clamp(1.8rem, 9vw, 2.7rem);
+      }
+
+      .mcp-hero-visual {
+        min-height: 29rem;
+        border-radius: 1.8rem;
+      }
+
+      .mcp-hero-answer {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        left: 1rem;
+        width: auto;
+        transform: none;
+      }
+
+      .mcp-command-stack {
+        inset: auto 1rem 1rem;
+      }
+
+      .mcp-command,
+      .mcp-command:nth-child(2),
+      .mcp-command:nth-child(3),
+      .mcp-command:nth-child(4) {
+        margin-left: 0;
+        max-width: 100%;
+      }
+
+      .mcp-section {
+        padding: 4.7rem 0;
+      }
+
+      .mcp-rule {
+        grid-template-columns: 1fr;
+        gap: 0.8rem;
+      }
+
+      .config-topbar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .config-tab-row {
+        width: 100%;
+        overflow-x: auto;
+      }
+    }
+  </style>
 </head>
 <body>
   <div class="page-progress" aria-hidden="true"></div>
   <div class="site-utility">
     <nav class="utility-group" aria-label="Primary">
       <a class="utility-link utility-link-brand" href="./index.html">
-        <span class="brand-mark" aria-hidden="true"></span>
-        <span class="brand-text">Context Engine</span>
+        <span class="brand-text">Context</span>
       </a>
       <a class="utility-link" href="./context-problem.html">Software Factory</a>
-      <a class="utility-link" href="./mcp-guide.html" aria-current="page">Sourcegraph Guide</a>
+      <a class="utility-link" href="./mcp-guide.html" aria-current="page">Sourcegraph MCP</a>
     </nav>
   </div>
 
-    <main>
-      <section class="page-hero">
-        <div class="container page-hero-grid">
-          <div class="reveal">
-            <span class="eyebrow">Sourcegraph MCP Guide</span>
-            <h1 class="section-title">Connect your agent to <span class="gradient-word">real codebase context</span> instead of local guesswork.</h1>
-            <p class="lede">
-              Sourcegraph exposes code search and code intelligence as a Model Context Protocol server. That means an MCP-compatible host can search, read, navigate, inspect history, and run Deep Search against your codebase without stuffing the entire repo into the prompt.
-            </p>
-            <div class="actions">
-              <a class="btn" href="https://sourcegraph.com/docs/api/mcp">Sourcegraph MCP docs</a>
-              <a class="ghost-btn" href="#sourcegraph-in-practice">See the implementation section</a>
-            </div>
-          </div>
+  <main class="mcp-guide-page">
+    <section class="mcp-hero">
+      <div class="container mcp-hero-layout">
+        <div class="mcp-hero-copy reveal">
+          <p class="mcp-brand">Sourcegraph <span>MCP</span></p>
+          <h1>Ask agents to investigate real code, not improvise around missing context.</h1>
+          <p class="lede">
+            Sourcegraph MCP turns the codebase into an evidence surface an agent can search, navigate, read, compare, and revisit. The job of the prompt is no longer to stuff everything into context. The job is to aim the investigation.
+          </p>
+        </div>
 
-          <article class="page-side-panel panel reveal">
-            <span class="eyebrow">Quick Start</span>
-            <h3 style="margin: 1rem 0 0.8rem;">Two endpoint patterns</h3>
-            <ul class="mini-list">
-              <li><strong>Public open source:</strong> use <code>https://sourcegraph.com/.api/mcp</code> for repositories indexed on Sourcegraph.com search.</li>
-              <li><strong>Private code:</strong> use <code>https://your-sourcegraph-instance.com/.api/mcp</code> for your own instance.</li>
-              <li><strong>Authentication:</strong> Sourcegraph supports OAuth-capable clients and access-token headers.</li>
-              <li><strong>Deep Search only:</strong> use the dedicated <code>/.api/mcp/deepsearch</code> endpoint when you want that specialized tool surface.</li>
+        <div class="mcp-hero-visual reveal" aria-hidden="true">
+          <div class="mcp-hero-grid"></div>
+          <div class="mcp-hero-answer">
+            <strong>Grounded answer</strong>
+            <p>
+              Repository cleanup is gated in <code>internal/workspaces/delete.go</code>, which calls
+              <code>CanDeleteWorkspace</code>. References show the same guard reused by admin APIs and the async cleanup worker.
+            </p>
+          </div>
+          <div class="mcp-command-stack">
+            <div class="mcp-command"><strong>list_repos</strong>({ query: "workspace permissions authz", limit: 3 })</div>
+            <div class="mcp-command"><strong>nls_search</strong>({ query: "where are workspace delete permissions enforced" })</div>
+            <div class="mcp-command"><strong>go_to_definition</strong>({ repo: "github.com/acme/workspaces", path: "internal/workspaces/handler.go", symbol: "DeleteWorkspace" })</div>
+            <div class="mcp-command"><strong>find_references</strong>({ repo: "github.com/acme/workspaces", path: "internal/authz/permissions.go", symbol: "CanDeleteWorkspace" })</div>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="mcp-section" id="why-it-changes-the-ask">
+      <div class="container">
+        <div class="mcp-section-heading reveal">
+          <div class="mcp-kicker">Why It Matters</div>
+          <h2>Sourcegraph MCP changes the shape of a good request.</h2>
+          <p class="lede">
+            Strong MCP pages stay simple: one idea, one contrast, one ask. This page keeps that same logic while expanding it into a complete product narrative.
+          </p>
+        </div>
+
+        <div class="mcp-comparison reveal">
+          <div class="mcp-side without">
+            <h3>Without</h3>
+            <p>An agent is boxed into whatever is already in the prompt, the active file, and its priors.</p>
+            <ul>
+              <li>It can explain the code it sees, but not the services or references outside the current window.</li>
+              <li>It tends to answer too early because the missing context is invisible.</li>
+              <li>The user asks for output: "explain this," "refactor this," "write a helper."</li>
             </ul>
+            <blockquote>"Refactor this file."</blockquote>
+          </div>
+
+          <div class="mcp-side with">
+            <h3>With</h3>
+            <p>The agent can search across repositories, inspect symbols, read exact files, and pull history before committing to an answer.</p>
+            <ul>
+              <li>It can map the surrounding system instead of guessing where the behavior lives.</li>
+              <li>It can show file paths, references, snippets, and diffs as evidence.</li>
+              <li>The user asks for investigation: "find," "trace," "compare," "show the codebase evidence."</li>
+            </ul>
+            <blockquote>"Use Sourcegraph MCP to find where this function is used, then explain the downstream impact."</blockquote>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mcp-section" id="tool-surface">
+      <div class="container">
+        <div class="mcp-section-heading reveal">
+          <div class="mcp-kicker">Tool Surface</div>
+          <h2>Everything the agent can reach through Sourcegraph MCP.</h2>
+          <p class="lede">
+            These are the tools available via MCP here. The page teaches what each tool is for instead of drowning the reader in protocol trivia.
+          </p>
+        </div>
+
+        <div class="mcp-tool-groups reveal">
+          <div class="mcp-tool-group">
+            <h3>Search</h3>
+            <div class="mcp-tool-list">
+              <div class="mcp-tool">
+                <code>nls_search({ query })</code>
+                <p>Semantic search for natural-language exploration when the user knows the behavior they want to trace but not the exact tokens.</p>
+              </div>
+              <div class="mcp-tool">
+                <code>keyword_search({ query })</code>
+                <p>Keyword or regex search using Sourcegraph query syntax for exact matching, repo filters, and precision work.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mcp-tool-group">
+            <h3>Files and Repos</h3>
+            <div class="mcp-tool-list">
+              <div class="mcp-tool">
+                <code>list_repos({ query, limit?, after?, before? })</code>
+                <p>Find the right repositories before the model starts searching blind across a large organization.</p>
+              </div>
+              <div class="mcp-tool">
+                <code>list_files({ repo, path?, revision? })</code>
+                <p>Map a repository or directory structure without inventing paths from memory.</p>
+              </div>
+              <div class="mcp-tool">
+                <code>read_file({ repo, path, startLine?, endLine?, revision? })</code>
+                <p>Pull only the exact file contents and line ranges that the model needs to reason over.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mcp-tool-group">
+            <h3>Navigation</h3>
+            <div class="mcp-tool-list">
+              <div class="mcp-tool">
+                <code>go_to_definition({ repo, path, symbol, revision? })</code>
+                <p>Jump from a usage site to the actual symbol definition that owns the behavior.</p>
+              </div>
+              <div class="mcp-tool">
+                <code>find_references({ repo, path, symbol, revision? })</code>
+                <p>Trace every downstream usage so the agent can assess impact before changing code.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mcp-tool-group">
+            <h3>History</h3>
+            <div class="mcp-tool-list">
+              <div class="mcp-tool">
+                <code>commit_search({ repos, messageTerms?, authors?, contentTerms?, files?, after?, before? })</code>
+                <p>Recover intent from commit history and narrow the search by author, message, content, file, or time window.</p>
+              </div>
+              <div class="mcp-tool">
+                <code>diff_search({ pattern, repos, added?, removed?, author?, after?, before? })</code>
+                <p>Search code diffs directly when the question is about where a behavior was added, changed, or removed.</p>
+              </div>
+              <div class="mcp-tool">
+                <code>compare_revisions({ repo, base, head, first?, after? })</code>
+                <p>Compare branches, commits, or releases to inspect the precise delta the agent is reasoning about.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="mcp-tool-group">
+            <h3>Ownership and Deep Analysis</h3>
+            <div class="mcp-tool-list">
+              <div class="mcp-tool">
+                <code>get_contributor_repos({ author, limit?, minCommits? })</code>
+                <p>Use contributor activity as a clue for likely repository ownership and domain familiarity.</p>
+              </div>
+              <div class="mcp-tool">
+                <code>deepsearch({ question })</code>
+                <p>Run a deeper, multi-step research pass when the task spans repos, history, architecture, and synthesis.</p>
+              </div>
+              <div class="mcp-tool">
+                <code>deepsearch_read({ identifier })</code>
+                <p>Reopen a Deep Search thread later by URL or token so the research can stay inspectable and reusable.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mcp-section" id="prompt-rules">
+      <div class="container">
+        <div class="mcp-section-heading reveal">
+          <div class="mcp-kicker">Prompt Rules</div>
+          <h2>Six rules for getting better investigation from MCP-enabled agents.</h2>
+          <p class="lede">
+            Each section below has one job: teach the user how to ask for better investigation.
+          </p>
+        </div>
+
+        <div class="mcp-rules reveal">
+          <div class="mcp-rule">
+            <div class="mcp-rule-number">1</div>
+            <div class="mcp-rule-copy">
+              <h3>Know the available tools before you prompt.</h3>
+              <p>If the user understands the search, navigation, history, and Deep Search surface, they can make a request the agent can actually execute.</p>
+              <ul>
+                <li>Use semantic search when the concept is fuzzy.</li>
+                <li>Use keyword search when the token, symbol, or repo filter is known.</li>
+                <li>Use definition, references, and file reads when the task depends on exact code evidence.</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="mcp-rule">
+            <div class="mcp-rule-number">2</div>
+            <div class="mcp-rule-copy">
+              <h3>Tell the agent to use MCP tools explicitly.</h3>
+              <p>Do not assume tool use is automatic. Ask for it directly, especially on investigative work.</p>
+              <p><span class="mcp-emphasis">Example:</span> "Use Sourcegraph MCP to investigate this issue and show the files you relied on."</p>
+            </div>
+          </div>
+
+          <div class="mcp-rule">
+            <div class="mcp-rule-number">3</div>
+            <div class="mcp-rule-copy">
+              <h3>Ask the agent to gather information first.</h3>
+              <p>Lead with investigation, then analysis. That reduces early confident guesses and creates a visible retrieval trail.</p>
+              <p><span class="mcp-emphasis">Example:</span> "Find the services that depend on this component, then summarize their relationship."</p>
+            </div>
+          </div>
+
+          <div class="mcp-rule">
+            <div class="mcp-rule-number">4</div>
+            <div class="mcp-rule-copy">
+              <h3>Be specific about the system data you want.</h3>
+              <p>Good prompts name the repo, service, symbol, file path, dependency edge, or time window the agent should inspect.</p>
+              <p><span class="mcp-emphasis">Example:</span> "Search the last five commit diffs in <code>@zoekt</code> touching queue indexing and explain what changed."</p>
+            </div>
+          </div>
+
+          <div class="mcp-rule">
+            <div class="mcp-rule-number">5</div>
+            <div class="mcp-rule-copy">
+              <h3>Break complex requests into steps.</h3>
+              <p>Ask the agent to retrieve first, synthesize second, and recommend last. Small stages produce better search behavior and easier verification.</p>
+            </div>
+          </div>
+
+          <div class="mcp-rule">
+            <div class="mcp-rule-number">6</div>
+            <div class="mcp-rule-copy">
+              <h3>Ask for codebase evidence in the answer.</h3>
+              <p>Require file paths, snippets, references, search results, or diffs. Evidence is what turns a plausible answer into a trustworthy one.</p>
+              <p><span class="mcp-emphasis">Example:</span> "Provide the code references and supporting snippets that justify your recommendation."</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mcp-section" id="investigation-loop">
+      <div class="container">
+        <div class="mcp-section-heading reveal">
+          <div class="mcp-kicker">Investigation Loop</div>
+          <h2>What a grounded session should look like end to end.</h2>
+          <p class="lede">
+            The right pattern is incremental retrieval: discover the area, move to exact symbols and files, inspect history only when needed, then answer with evidence.
+          </p>
+        </div>
+
+        <div class="mcp-evidence reveal">
+          <article class="mcp-terminal">
+            <div class="mcp-terminal-bar">
+              <div class="mcp-terminal-dots" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </div>
+              <div class="mcp-terminal-title">Realistic Sourcegraph MCP session</div>
+            </div>
+            <pre><code>User: Use Sourcegraph MCP to investigate why users are still getting billed after a workspace is deleted. Find the repos involved, trace the deletion path, inspect the downstream billing consumer, and check whether the event contract changed recently.
+
+Agent:
+I'll investigate this with Sourcegraph MCP first, then summarize the failure path with codebase evidence.
+
+Agent plan:
+1. Discover the repos involved.
+2. Trace the deletion path.
+3. Inspect billing cancellation consumers.
+4. Check recent diffs if the event contract changed.
+
+list_repos({ query: "workspace provisioning billing", limit: 5 })
+nls_search({ query: "workspace deletion should cancel billing subscription" })
+keyword_search({ query: "repo:github.com/acme/provisioning OR repo:github.com/acme/billing \"DeleteWorkspace\" OR \"CancelSubscription\"" })
+find_references({ repo: "github.com/acme/provisioning", path: "internal/workspaces/delete.go", symbol: "DeleteWorkspace" })
+read_file({ repo: "github.com/acme/billing", path: "internal/subscriptions/consumer.go", startLine: 1, endLine: 180 })
+diff_search({ pattern: "DeleteWorkspace", repos: ["github.com/acme/provisioning"], removed: true, after: "2026-01-01" })
+</code></pre>
           </article>
+
+          <aside class="mcp-evidence-panel">
+            <h3>What the answer should include</h3>
+            <p>The goal is not just a conclusion. The goal is a conclusion backed by a visible retrieval path.</p>
+            <ul class="mcp-checklist">
+              <li>Name the repos and files that matter.</li>
+              <li>Point to the definition and the missing downstream consumer or event.</li>
+              <li>Use history tools only if the current code is not enough to explain the regression.</li>
+              <li>State the fix path in terms of contract restoration, call sites, and tests.</li>
+            </ul>
+          </aside>
         </div>
-      </section>
+      </div>
+    </section>
 
-      <section class="section compact" id="sourcegraph-in-practice">
-        <div class="container">
-          <div class="guide-grid">
-            <article class="guide-panel reveal">
-              <span class="eyebrow">How Tool Calling Works</span>
-              <h2 class="section-title" style="font-size: clamp(1.9rem, 4vw, 3.2rem);">Sourcegraph is the retrieval plane inside the agent loop.</h2>
-              <div class="guide-steps">
-                <div class="guide-step">
-                  <span class="stack-number">1</span>
-                  <div>
-                    <strong>Initialize the connection</strong>
-                    <p>The host creates an MCP client connection, negotiates capabilities with the Sourcegraph MCP server, and learns which tools are available.</p>
-                  </div>
-                </div>
-                <div class="guide-step">
-                  <span class="stack-number">2</span>
-                  <div>
-                    <strong>List tools before acting</strong>
-                    <p>The agent can discover search, navigation, file, history, and Deep Search tools explicitly instead of assuming hidden capabilities.</p>
-                  </div>
-                </div>
-                <div class="guide-step">
-                  <span class="stack-number">3</span>
-                  <div>
-                    <strong>Call only the tools it needs</strong>
-                    <p>The agent can run repo discovery, keyword and semantic search, file reads, symbol navigation, history lookups, revision comparison, contributor discovery, and Deep Search as the task demands.</p>
-                  </div>
-                </div>
-                <div class="guide-step">
-                  <span class="stack-number">4</span>
-                  <div>
-                    <strong>Bring the evidence back into the reasoning window</strong>
-                    <p>Only the retrieved context enters the model’s working memory. That keeps the prompt tight and the evidence relevant.</p>
-                  </div>
-                </div>
-              </div>
-            </article>
-
-            <article class="guide-panel reveal">
-              <span class="eyebrow">JSON-RPC Shape</span>
-              <h3 style="margin: 1rem 0 0.8rem;">Representative tool call</h3>
-              <div class="code-frame">
-                <div class="code-header">
-                  <strong>tools/call</strong>
-                  <span>MCP request shape</span>
-                </div>
-                <pre class="code-block"><code>{
-  <span class="key">"jsonrpc"</span>: <span class="string">"2.0"</span>,
-  <span class="key">"id"</span>: <span class="value">7</span>,
-  <span class="key">"method"</span>: <span class="string">"tools/call"</span>,
-  <span class="key">"params"</span>: {
-    <span class="key">"name"</span>: <span class="string">"find_references"</span>,
-    <span class="key">"arguments"</span>: {
-      <span class="key">"repo"</span>: <span class="string">"github.com/acme/platform"</span>,
-      <span class="key">"path"</span>: <span class="string">"pkg/auth/middleware.go"</span>,
-      <span class="key">"symbol"</span>: <span class="string">"AuthMiddleware"</span>
-    }
-  }
-}</code></pre>
-              </div>
-              <p class="footnote" style="margin-top: 1rem;">
-                The important architectural point is not the request syntax. It is that the agent can discover and call the capability at the moment it realizes the context is missing.
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section">
-        <div class="container">
-          <div class="section-header reveal">
-            <span class="eyebrow">Client Configs</span>
-            <h2 class="section-title">Host setup patterns for common MCP-compatible tools.</h2>
-            <p class="lede">
-              Sourcegraph’s current integrations and MCP docs show direct support for multiple clients. For hosts that only accept stdio MCP servers, use a remote bridge like <code>mcp-remote</code>.
-            </p>
-          </div>
-
-          <article class="terminal-shell config-panel reveal" data-tab-group>
-            <div class="config-topbar">
-              <div class="config-tab-row">
-                <button class="config-tab is-active" type="button" data-tab-target="claude-desktop">Claude Desktop</button>
-                <button class="config-tab" type="button" data-tab-target="claude-code">Claude Code</button>
-                <button class="config-tab" type="button" data-tab-target="cursor">Cursor</button>
-                <button class="config-tab" type="button" data-tab-target="windsurf">Windsurf</button>
-                <button class="config-tab" type="button" data-tab-target="vscode">VS Code</button>
-              </div>
-              <button class="copy-button" type="button" data-copy-source="#guideConfigs .config-content.is-active code">Copy</button>
-            </div>
-
-            <div id="guideConfigs">
-              <div class="config-content is-active" data-tab-panel="claude-desktop">
-                <div class="code-frame">
-                  <div class="code-header">
-                    <strong>claude_desktop_config.json</strong>
-                    <span>Bridge remote HTTP MCP through stdio</span>
-                  </div>
-                  <pre class="code-block"><code>{
-  <span class="key">"mcpServers"</span>: {
-    <span class="key">"sourcegraph"</span>: {
-      <span class="key">"command"</span>: <span class="string">"npx"</span>,
-      <span class="key">"args"</span>: [
-        <span class="string">"-y"</span>,
-        <span class="string">"mcp-remote"</span>,
-        <span class="string">"https://sourcegraph.com/.api/mcp"</span>
-      ]
-    }
-  }
-}</code></pre>
-                </div>
-              </div>
-
-              <div class="config-content" data-tab-panel="claude-code">
-                <div class="code-frame">
-                  <div class="code-header">
-                    <strong>.mcp.json</strong>
-                    <span>Project-scoped or user-scoped remote server</span>
-                  </div>
-                  <pre class="code-block"><code>{
-  <span class="key">"mcpServers"</span>: {
-    <span class="key">"sourcegraph"</span>: {
-      <span class="key">"type"</span>: <span class="string">"http"</span>,
-      <span class="key">"url"</span>: <span class="string">"https://your-sourcegraph-instance.com/.api/mcp"</span>,
-      <span class="key">"headers"</span>: {
-        <span class="key">"Authorization"</span>: <span class="string">"token YOUR_ACCESS_TOKEN"</span>
-      }
-    }
-  }
-}</code></pre>
-                </div>
-              </div>
-
-              <div class="config-content" data-tab-panel="cursor">
-                <div class="code-frame">
-                  <div class="code-header">
-                    <strong>~/.cursor/mcp.json</strong>
-                    <span>Direct remote MCP configuration</span>
-                  </div>
-                  <pre class="code-block"><code>{
-  <span class="key">"mcpServers"</span>: {
-    <span class="key">"sourcegraph"</span>: {
-      <span class="key">"url"</span>: <span class="string">"https://sourcegraph.com/.api/mcp"</span>,
-      <span class="key">"type"</span>: <span class="string">"http"</span>
-    }
-  }
-}</code></pre>
-                </div>
-              </div>
-
-              <div class="config-content" data-tab-panel="windsurf">
-                <div class="code-frame">
-                  <div class="code-header">
-                    <strong>~/.codeium/windsurf/mcp_config.json</strong>
-                    <span>Header-based remote MCP configuration</span>
-                  </div>
-                  <pre class="code-block"><code>{
-  <span class="key">"mcpServers"</span>: {
-    <span class="key">"sourcegraph"</span>: {
-      <span class="key">"serverUrl"</span>: <span class="string">"https://your-sourcegraph-instance.com/.api/mcp"</span>,
-      <span class="key">"headers"</span>: {
-        <span class="key">"Authorization"</span>: <span class="string">"token YOUR_ACCESS_TOKEN"</span>,
-        <span class="key">"Content-Type"</span>: <span class="string">"application/json"</span>
-      }
-    }
-  }
-}</code></pre>
-                </div>
-              </div>
-
-              <div class="config-content" data-tab-panel="vscode">
-                <div class="code-frame">
-                  <div class="code-header">
-                    <strong>.vscode/mcp.json</strong>
-                    <span>VS Code style project-scoped MCP config</span>
-                  </div>
-                  <pre class="code-block"><code>{
-  <span class="key">"servers"</span>: {
-    <span class="key">"sourcegraph"</span>: {
-      <span class="key">"type"</span>: <span class="string">"http"</span>,
-      <span class="key">"url"</span>: <span class="string">"https://sourcegraph.com/.api/mcp"</span>
-    }
-  },
-  <span class="key">"inputs"</span>: []
-}</code></pre>
-                </div>
-              </div>
-            </div>
-
-            <div class="host-strip" aria-label="Compatibility notes">
-              <span class="host-badge">Claude Desktop via remote bridge</span>
-              <span class="host-badge">Claude Code</span>
-              <span class="host-badge">Cursor</span>
-              <span class="host-badge">Windsurf</span>
-              <span class="host-badge">VS Code / Copilot</span>
-              <span class="host-badge">Codex</span>
-              <span class="host-badge">Other MCP-compatible hosts</span>
-            </div>
-          </article>
-        </div>
-      </section>
-
-      <section class="section compact">
-        <div class="container">
-          <div class="section-header reveal">
-            <span class="eyebrow">One Concrete Implementation</span>
-            <h2 class="section-title">Sourcegraph MCP is one practical way to wire codebase context into agents.</h2>
-            <p class="lede">
-              As a concrete example, Sourcegraph MCP gives agents the same code intelligence surface developers rely on: repo discovery, keyword and natural-language search, file retrieval, symbol navigation, references, commit history, diff search, revision comparison, contributor discovery, and Deep Search.
-            </p>
-          </div>
-
-          <div class="workbench reveal">
-            <article class="workbench-panel" data-tab-group>
-              <div class="editor-topbar">
-                <div class="config-tab-row">
-                  <button class="config-tab is-active" type="button" data-tab-target="claude-desktop">Claude Desktop</button>
-                  <button class="config-tab" type="button" data-tab-target="cursor">Cursor</button>
-                  <button class="config-tab" type="button" data-tab-target="windsurf">Windsurf</button>
-                  <button class="config-tab" type="button" data-tab-target="vscode">VS Code</button>
-                </div>
-                <button class="copy-button" type="button" data-copy-source="#landingConfigs .config-content.is-active code">Copy</button>
-              </div>
-
-              <div id="landingConfigs">
-                <div class="config-content is-active" data-tab-panel="claude-desktop">
-                  <div class="code-header">
-                    <strong>claude_desktop_config.json</strong>
-                    <span>Use a remote MCP bridge when the host expects stdio</span>
-                  </div>
-                  <pre class="code-block"><code>{
-  <span class="key">"mcpServers"</span>: {
-    <span class="key">"sourcegraph"</span>: {
-      <span class="key">"command"</span>: <span class="string">"npx"</span>,
-      <span class="key">"args"</span>: [
-        <span class="string">"-y"</span>,
-        <span class="string">"mcp-remote"</span>,
-        <span class="string">"https://sourcegraph.com/.api/mcp"</span>
-      ]
-    }
-  }
-}</code></pre>
-                </div>
-
-                <div class="config-content" data-tab-panel="cursor">
-                  <div class="code-header">
-                    <strong>~/.cursor/mcp.json</strong>
-                    <span>Remote HTTP MCP configuration</span>
-                  </div>
-                  <pre class="code-block"><code>{
-  <span class="key">"mcpServers"</span>: {
-    <span class="key">"sourcegraph"</span>: {
-      <span class="key">"url"</span>: <span class="string">"https://sourcegraph.com/.api/mcp"</span>,
-      <span class="key">"type"</span>: <span class="string">"http"</span>
-    }
-  }
-}</code></pre>
-                </div>
-
-                <div class="config-content" data-tab-panel="windsurf">
-                  <div class="code-header">
-                    <strong>~/.codeium/windsurf/mcp_config.json</strong>
-                    <span>Header-based remote MCP configuration</span>
-                  </div>
-                  <pre class="code-block"><code>{
-  <span class="key">"mcpServers"</span>: {
-    <span class="key">"sourcegraph"</span>: {
-      <span class="key">"serverUrl"</span>: <span class="string">"https://your-sourcegraph-instance.com/.api/mcp"</span>,
-      <span class="key">"headers"</span>: {
-        <span class="key">"Authorization"</span>: <span class="string">"token YOUR_ACCESS_TOKEN"</span>,
-        <span class="key">"Content-Type"</span>: <span class="string">"application/json"</span>
-      }
-    }
-  }
-}</code></pre>
-                </div>
-
-                <div class="config-content" data-tab-panel="vscode">
-                  <div class="code-header">
-                    <strong>.vscode/mcp.json</strong>
-                    <span>VS Code / Copilot style project config</span>
-                  </div>
-                  <pre class="code-block"><code>{
-  <span class="key">"servers"</span>: {
-    <span class="key">"sourcegraph"</span>: {
-      <span class="key">"type"</span>: <span class="string">"http"</span>,
-      <span class="key">"url"</span>: <span class="string">"https://sourcegraph.com/.api/mcp"</span>
-    }
-  },
-  <span class="key">"inputs"</span>: []
-}</code></pre>
-                </div>
-              </div>
-
-              <div class="host-strip" aria-label="Supported hosts">
-                <span class="host-badge">Claude Desktop</span>
-                <span class="host-badge">Claude Code</span>
-                <span class="host-badge">Cursor</span>
-                <span class="host-badge">Windsurf</span>
-                <span class="host-badge">VS Code</span>
-                <span class="host-badge">Codex</span>
-                <span class="host-badge">Any MCP-compatible agent</span>
-              </div>
-            </article>
-
-            <article class="workbench-panel workbench-panel-guide">
-              <span class="eyebrow">Live Session</span>
-              <h3>How an agent uses a Sourcegraph-backed retrieval layer</h3>
-              <p>
-                The server is not “extra context” bolted onto the prompt. It is the retrieval layer. The agent decides what it needs, calls the right tool, reads the evidence, and only then acts.
-              </p>
-              <div class="walkthrough" id="landingWalkthrough"></div>
-              <p class="footnote">
-                Public open-source mode: point a compatible client at <code>https://sourcegraph.com/.api/mcp</code>. That uses the same Sourcegraph search surface available at <code>https://sourcegraph.com/search</code>. For private code, use your own Sourcegraph instance URL instead.
-              </p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section compact">
-        <div class="container">
-          <div class="section-header reveal">
-            <span class="eyebrow">What Sourcegraph Exposes</span>
-            <h2 class="section-title">The complete Sourcegraph MCP tool inventory.</h2>
-            <p class="lede">
-              These are the Sourcegraph MCP tools an agent can discover from the server. Deep Search deserves special handling: <code>deepsearch({ question })</code> launches the long-form research run, and <code>deepsearch_read({ identifier })</code> reopens that conversation later by token or URL.
-            </p>
-          </div>
-
-          <div class="table-panel reveal">
-            <div class="table-scroll">
-              <table class="tool-table">
-                <thead>
-                  <tr>
-                    <th>Category</th>
-                    <th>Tool</th>
-                    <th>What it gives the agent</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <td><strong>Search</strong></td>
-                    <td><code>nls_search({ query })</code></td>
-                    <td>Semantic search for natural-language exploration when the agent knows the concept or behavior but not the exact token.</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Search</strong></td>
-                    <td><code>keyword_search({ query })</code></td>
-                    <td>Keyword or regex search using Sourcegraph query syntax for exact search, boolean filters, repo targeting, and revision scoping.</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Files</strong></td>
-                    <td><code>read_file({ repo, path, startLine?, endLine?, revision? })</code></td>
-                    <td>Fetches grounded file contents with optional line ranges and revision pinning so the model reads only the exact evidence it needs.</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Repos</strong></td>
-                    <td><code>list_repos({ query, limit?, after?, before? })</code></td>
-                    <td>Discovers relevant repositories before the agent starts searching or reading, which matters in large multi-repo environments.</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Files</strong></td>
-                    <td><code>list_files({ repo, path?, revision? })</code></td>
-                    <td>Lists files and directories inside a repository so the agent can map structure without guessing paths from thin air.</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Navigation</strong></td>
-                    <td><code>go_to_definition({ repo, path, symbol, revision? })</code></td>
-                    <td>Locates the real symbol definition from a usage site, with revision-aware and cross-repo code intelligence.</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Navigation</strong></td>
-                    <td><code>find_references({ repo, path, symbol, revision? })</code></td>
-                    <td>Finds symbol usage across the codebase so the agent can assess downstream consumers and change blast radius.</td>
-                  </tr>
-                  <tr>
-                    <td><strong>History</strong></td>
-                    <td><code>commit_search({ repos, messageTerms?, authors?, contentTerms?, files?, after?, before? })</code></td>
-                    <td>Searches commit history by message, author, content, file path, and time bounds to recover intent and prior fixes.</td>
-                  </tr>
-                  <tr>
-                    <td><strong>History</strong></td>
-                    <td><code>diff_search({ pattern, repos, added?, removed?, author?, after?, before? })</code></td>
-                    <td>Searches code diffs directly to find where a pattern was added or removed across repositories and time.</td>
-                  </tr>
-                  <tr>
-                    <td><strong>History</strong></td>
-                    <td><code>compare_revisions({ repo, base, head, first?, after? })</code></td>
-                    <td>Compares two revisions to inspect the exact file-level delta between branches, commits, tags, or releases.</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Ownership</strong></td>
-                    <td><code>get_contributor_repos({ author, limit?, minCommits? })</code></td>
-                    <td>Discovers contributor activity by repository, which helps agents infer likely ownership or domain familiarity.</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Deep analysis</strong></td>
-                    <td><code>deepsearch({ question })</code></td>
-                    <td>Runs Sourcegraph Deep Search for complex, multi-step questions that need synthesis across many search, navigation, and history hops.</td>
-                  </tr>
-                  <tr>
-                    <td><strong>Deep analysis</strong></td>
-                    <td><code>deepsearch_read({ identifier })</code></td>
-                    <td>Reads a Deep Search conversation later by URL or token so the host can reopen, inspect, or continue prior research.</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="section compact">
-        <div class="container">
-          <div class="section-header reveal">
-            <span class="eyebrow">Example Session</span>
-            <h2 class="section-title">A realistic Sourcegraph MCP research loop.</h2>
-            <p class="lede">
-              The important pattern is incremental retrieval: search first, navigate next, read only the needed files, then make the model reason over evidence instead of raw repository mass.
-            </p>
-          </div>
-
-          <article class="terminal-shell walkthrough-panel reveal">
-            <div id="guideWalkthrough"></div>
-          </article>
-        </div>
-      </section>
-
-      <section class="section compact">
-        <div class="container">
-          <div class="section-header reveal">
-            <span class="eyebrow">References</span>
-            <h2 class="section-title" style="font-size: clamp(1.8rem, 4vw, 3rem);">Current docs used for this guide</h2>
-          </div>
-
-          <div class="reference-grid reveal">
-            <article class="reference-card">
-              <h3>Sourcegraph MCP server docs</h3>
-              <p>Server endpoints, authentication modes, supported clients, and tool inventory.</p>
-              <p style="margin-top: 0.8rem;"><a href="https://sourcegraph.com/docs/api/mcp">Open the docs</a></p>
-            </article>
-            <article class="reference-card">
-              <h3>Sourcegraph integrations</h3>
-              <p>Public endpoint and current client integration patterns, including remote MCP examples.</p>
-              <p style="margin-top: 0.8rem;"><a href="https://sourcegraph.com/integrations">Open integrations</a></p>
-            </article>
-            <article class="reference-card">
-              <h3>MCP architecture docs</h3>
-              <p>Official explanation of hosts, clients, servers, and the resources/tools/prompts primitive model.</p>
-              <p style="margin-top: 0.8rem;"><a href="https://modelcontextprotocol.io/docs/learn/architecture">Open MCP architecture</a></p>
-            </article>
-          </div>
-        </div>
-      </section>
-
-      <section class="section footer-cta">
-        <div class="container">
-          <article class="cta-panel panel reveal">
-            <span class="eyebrow">Back To The Narrative</span>
-            <h2 class="section-title">Once the agent can retrieve the right context, the rest of the stack gets <span class="gradient-word">much more reliable</span>.</h2>
-            <p class="lede">
-              Go back to the landing page for the interactive comparison, or keep reading the context deep dive if you want the architectural argument first.
-            </p>
-            <div class="actions" style="justify-content: center;">
-              <a class="btn" href="./index.html">Return to the landing page</a>
-              <a class="ghost-btn" href="./context-problem.html">Revisit the context deep dive</a>
-            </div>
-          </article>
-        </div>
-      </section>
-    </main>
+  </main>
 
   <script src="./assets/site.js"></script>
 </body>

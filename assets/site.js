@@ -328,6 +328,67 @@
     window.addEventListener("resize", syncActive);
   }
 
+  function initUtilityBar() {
+    const utility = qs(".site-utility");
+    if (!utility) return;
+
+    const hoverQuery = window.matchMedia("(hover: hover) and (pointer: fine)");
+    const revealThreshold = 84;
+    let rafId = 0;
+    let shouldReveal = false;
+
+    const syncVisibility = () => {
+      rafId = 0;
+      const shouldHide = hoverQuery.matches && window.innerWidth > 900 && window.scrollY > 18;
+      utility.classList.toggle("is-hidden", shouldHide);
+      utility.classList.toggle("is-revealed", shouldHide && shouldReveal);
+    };
+
+    const requestSync = () => {
+      if (rafId) return;
+      rafId = requestAnimationFrame(syncVisibility);
+    };
+
+    const handlePointerMove = (event) => {
+      const nextReveal = event.clientY <= revealThreshold;
+      if (nextReveal === shouldReveal) return;
+      shouldReveal = nextReveal;
+      requestSync();
+    };
+
+    const handleFocusIn = () => {
+      shouldReveal = true;
+      requestSync();
+    };
+
+    const handleFocusOut = () => {
+      window.setTimeout(() => {
+        if (utility.contains(doc.activeElement)) return;
+        shouldReveal = false;
+        requestSync();
+      }, 0);
+    };
+
+    syncVisibility();
+
+    window.addEventListener("scroll", requestSync, { passive: true });
+    window.addEventListener("resize", requestSync);
+    window.addEventListener("mousemove", handlePointerMove, { passive: true });
+    window.addEventListener("mouseleave", () => {
+      shouldReveal = false;
+      requestSync();
+    });
+    utility.addEventListener("mouseenter", handleFocusIn);
+    utility.addEventListener("focusin", handleFocusIn);
+    utility.addEventListener("focusout", handleFocusOut);
+
+    if (hoverQuery.addEventListener) {
+      hoverQuery.addEventListener("change", requestSync);
+    } else if (hoverQuery.addListener) {
+      hoverQuery.addListener(requestSync);
+    }
+  }
+
   function initCopyButtons() {
     qsa("[data-copy-source]").forEach((button) => {
       button.addEventListener("click", async () => {
@@ -901,6 +962,7 @@
     initRevealObserver();
     initSmoothLinks();
     initChapterRail();
+    initUtilityBar();
     initCopyButtons();
     initTabs();
     initPageIntro();

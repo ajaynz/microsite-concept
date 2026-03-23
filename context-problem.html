@@ -15,7 +15,6 @@
   <div class="site-utility">
     <nav class="utility-group" aria-label="Primary">
       <a class="utility-link utility-link-brand" href="./index.html">
-        <span class="brand-mark" aria-hidden="true"></span>
         <span class="brand-text">Context Engine</span>
       </a>
       <a class="utility-link" href="./context-problem.html" aria-current="page">Software Factory</a>
@@ -28,52 +27,26 @@
       <div class="container context-hero-layout">
         <div class="context-hero-copy reveal">
           <span class="eyebrow">Software Factory</span>
-          <h1 class="section-title">The factory is here. <span class="gradient-word">Context</span> is still the missing production input.</h1>
-          <p class="lede">
-            Background coding agents are no longer hypothetical. Stripe, Spotify, Ramp, and Uber are already running agent systems that plan, code, test, and open pull requests at scale. The hard part is no longer proving that an agent can execute. The hard part is getting the right context into the loop before it acts.
-          </p>
+          <h1 class="hero-statement">The factory is here. <span class="gradient-word">Context</span> is still the missing production input.</h1>
         </div>
 
         <div class="context-hero-plane reveal" aria-hidden="true">
-          <div class="context-hero-glow"></div>
-          <div class="context-hero-terminal">
-            <div class="factory-scene">
-              <div class="factory-scene-header">
-                <span class="factory-scene-kicker">Missing Correct Context</span>
-              </div>
-
-              <div class="factory-floor">
-                <div class="factory-belt"></div>
-
-                <div class="factory-station factory-station-intake">
-                  <span class="station-step">01</span>
-                </div>
-
-                <div class="factory-station factory-station-context">
-                  <span class="station-step">02</span>
-                  <span class="factory-alarm"></span>
-                  <div class="factory-smoke">
-                    <span class="factory-smoke-plume plume-a"></span>
-                    <span class="factory-smoke-plume plume-b"></span>
-                    <span class="factory-smoke-plume plume-c"></span>
-                  </div>
-                </div>
-
-                <div class="factory-station factory-station-agent">
-                  <span class="station-step">03</span>
-                </div>
-
-                <div class="factory-station factory-station-output">
-                  <span class="station-step">04</span>
-                </div>
-
-                <span class="factory-batch batch-a"></span>
-                <span class="factory-batch batch-b"></span>
-                <span class="factory-batch batch-c"></span>
-
-                <div class="factory-failure-rail"></div>
-              </div>
-            </div>
+          <div class="context-hero-terminal context-failure-strip">
+            <article class="context-failure-item">
+              <span class="context-bullet"></span>
+              <h3>Hallucinated symbol</h3>
+              <p>A nearby helper looks plausible enough to ship.</p>
+            </article>
+            <article class="context-failure-item">
+              <span class="context-bullet"></span>
+              <h3>Blast radius missed</h3>
+              <p>Downstream callers never enter the plan in time.</p>
+            </article>
+            <article class="context-failure-item">
+              <span class="context-bullet"></span>
+              <h3>Factory sputters</h3>
+              <p>Review churn, failed tests, and rollback work replace throughput.</p>
+            </article>
           </div>
         </div>
       </div>
@@ -83,61 +56,53 @@
       <div class="container">
         <div class="section-header reveal">
           <span class="eyebrow">Market Signal</span>
-          <h2 class="section-title tight">The software factory is already being built in public.</h2>
         </div>
 
-        <div class="editorial-split reveal">
-          <div class="editorial-copy">
-            <p class="lede">
-              The article is strongest when it stops treating agents as a future abstraction and treats them as infrastructure. Serious teams are building factory systems: queues, sandboxes, review loops, observability hooks, and autonomous agents that work without a human shepherding every step.
-            </p>
-            <p class="lede">
-              But those engineering writeups all converge on the same lesson. Execution is not the main bottleneck anymore. Context is. The difference between a flashy demo and a mergeable output is whether the agent can see enough of the real system before it decides what to do.
-            </p>
-          </div>
+        <div class="editorial-copy reveal">
+          <h2 class="hero-statement hero-statement-wide">Everyone is racing to build a software factory. Not buying one. Building one</h2>
+          <p class="lede">
+            A factory isn’t a tool you pick up off a shelf. It’s infrastructure. It’s process. It’s a system that runs reliably at scale without a human shepherding every unit of output. And increasingly, leading engineering organisations are actually building autonomous coding agents that generate code, review, test, and merge pull requests around the clock.
+          </p>
+        </div>
+      </div>
+    </section>
 
-          <div class="editorial-rail">
-            <article class="editorial-point">
-              <span class="stack-number">01</span>
-              <div>
-                <h3>Stripe</h3>
-                <p>Minions reportedly merge more than 1,300 AI-generated pull requests a week, and the system prehydrates tickets, docs, and Sourcegraph results before the model loop starts.</p>
-              </div>
-            </article>
-            <article class="editorial-point">
-              <span class="stack-number">02</span>
-              <div>
-                <h3>Spotify</h3>
-                <p>The article highlights Spotify’s context-engineering writeup because it shows what breaks first: manual file loading, brittle grep-heavy prompting, and agents that lose the thread when context handling is weak.</p>
-              </div>
-            </article>
-            <article class="editorial-point">
-              <span class="stack-number">03</span>
-              <div>
-                <h3>Ramp</h3>
-                <p>The background agent matters because it has the same operational surface a human engineer would use: observability, browser access, flags, queues, and production-adjacent signals.</p>
-              </div>
-            </article>
-            <article class="editorial-point">
-              <span class="stack-number">04</span>
-              <div>
-                <h3>Uber</h3>
-                <p>Uber treats source code, docs, Slack, and Jira as layered context sources, which reinforces the article’s larger point: context has to become a platform component, not a prompt afterthought.</p>
-              </div>
-            </article>
-          </div>
+    <section class="section section-compact section-market-grid">
+      <div class="container">
+        <div class="editorial-rail editorial-rail-matrix reveal">
+          <article class="editorial-point">
+            <div>
+              <h3>Stripe</h3>
+              <p><a href="https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents" target="_blank" rel="noreferrer">Minions</a>: merges over 1,300 AI generated pull requests every week. Background coding agents that go from a Slack message to a CI-passing PR with no human in the loop. Engineers tag the Minion bot in Slack and walk away. The agent runs in an isolated pre-warmed devbox, executes the task, and opens a PR. Over a thousand of these ship to review every week.</p>
+            </div>
+          </article>
+          <article class="editorial-point">
+            <div>
+              <h3>Spotify</h3>
+              <p><a href="https://engineering.atspotify.com/2025/11/spotifys-background-coding-agent-part-1" target="_blank" rel="noreferrer">Honk</a>: has shipped more than 1,500 agent authored PRs into production. Adapting their Fleet Management system into a platform for running Honk, a background coding agent that performs large scale code migrations from natural language instructions, reducing the need for complex transformation scripts and significantly speeding up migrations.</p>
+            </div>
+          </article>
+          <article class="editorial-point">
+            <div>
+              <h3>Ramp</h3>
+              <p><a href="https://builders.ramp.com/post/why-we-built-our-background-agent" target="_blank" rel="noreferrer">Inspect</a>: internal agent now authors roughly 30% of all merged pull requests. A background agent that runs in sandboxed cloud VMs with full access to their entire development environment: Postgres, Redis, Temporal, RabbitMQ, Sentry, Datadog, LaunchDarkly, Buildkite. Engineers can kick off an Inspect session from Slack, a web UI, or a Chrome extension.</p>
+            </div>
+          </article>
+          <article class="editorial-point">
+            <div>
+              <h3>Uber</h3>
+              <p><a href="https://newsletter.pragmaticengineer.com/p/how-uber-uses-ai-for-development" target="_blank" rel="noreferrer">Minion</a> (separate naming coincidence from Stripe’s): has 84% of developers using agentic tooling monthly. A background agent with full monorepo access. On top of that, they built an internal MCP gateway that exposes several internal endpoints; source code, Jira, Slack, engineering documentation and etc. as a unified context surface for agents.</p>
+            </div>
+          </article>
         </div>
       </div>
     </section>
 
     <section class="section">
       <div class="container">
-        <div class="section-header centered reveal">
-          <span class="eyebrow">Rediscovery</span>
-          <h2 class="section-title">Every serious agent team keeps rediscovering the same failure mode.</h2>
-          <p class="lede">
-            The article argues that context gets underestimated because it is invisible when it works and quietly damaging when it does not. That makes it easy to underinvest in the exact layer that determines whether a factory scales.
-          </p>
+        <div class="section-header reveal">
+          <span class="eyebrow">SOFTWARE FACTORY CAN'T FUNCTION WITHOUT RIGHT CONTEXT</span>
+          <h2 class="hero-statement hero-statement-wide">Every serious agent team keeps rediscovering the same failure mode.</h2>
         </div>
 
         <div class="evaluation-track reveal">
@@ -167,6 +132,7 @@
             <div>
               <h3>Most benchmarks barely test this layer.</h3>
               <p>Self-contained coding tasks hide the real retrieval problem. Cross-repository, multi-service work is where weak context surfaces are exposed.</p>
+              <p>Stephanie Jarmak makes the same point in <a href="https://medium.com/@steph.jarmak/i-couldnt-find-a-good-enough-benchmark-for-large-scale-software-development-so-i-built-one-d2cc5946e963" target="_blank" rel="noreferrer">her benchmark writeup</a>.</p>
             </div>
           </article>
         </div>
@@ -177,14 +143,14 @@
       <div class="container">
         <div class="section-header reveal">
           <span class="eyebrow">Context Hierarchy</span>
-          <h2 class="section-title tight">A software factory needs more than code access.</h2>
+          <h2 class="hero-statement hero-statement-wide">A software factory needs more than code access.</h2>
         </div>
 
         <div class="stack-grid reveal">
           <div class="panel page-side-panel">
             <span class="eyebrow">Why Factories Stall</span>
             <p class="lede">
-              The article’s most useful framing is that context is not one thing. It is a layered production input. Code, runtime state, and team knowledge each answer a different class of question, and missing any one of them can break the loop.
+              Context is not one thing. It is a layered production input. Code, runtime state, and team knowledge each answer a different class of question, and missing any one of them can break the loop.
             </p>
             <ul class="mini-list">
               <li>Codebase context answers what exists, where it lives, and what depends on it.</li>
@@ -217,24 +183,21 @@
     <section class="section">
       <div class="container">
         <div class="section-header reveal">
-          <span class="eyebrow">Design Insight</span>
-          <h2 class="section-title">What Stripe gets right is not just tooling. It is sequencing.</h2>
+          <span class="eyebrow">A good software factory pattern</span>
+          <h2 class="hero-statement hero-statement-wide">Context design should be a foundational consideration in how the software factory operates</h2>
         </div>
 
         <div class="page-hero-grid reveal">
           <div class="editorial-copy">
             <p class="lede">
-              One of the sharpest points in the piece is that context should be assembled before the model wakes up. That is a stronger design than asking the agent to wander through the codebase, discover what matters, and manage its own context budget in the same loop.
+              Stripe's Minion architecture makes the pattern clear: context is solved before the agent loop starts, not inside it.
             </p>
             <p class="lede">
-              The article uses Stripe as the clearest example: deterministic orchestration gathers links, tickets, docs, and code intelligence up front. Sourcegraph matters in that design because it gives the system semantically grounded answers about symbols, references, and cross-repository scope, not just raw file bytes.
+              Toolshed MCP exposes hundreds of tools across internal systems, docs, tickets, and code intelligence. Before any LLM call, a deterministic orchestrator resolves task references, fetches Jira and docs, runs code search, and hydrates the context window.
             </p>
-            <a class="text-link" href="./mcp-guide.html">
-              Open the Sourcegraph MCP guide
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-                <path d="M3 8H13M9 4L13 8L9 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-              </svg>
-            </a>
+            <p class="lede">
+              That is the pattern: front load the intelligence, assemble context deterministically, then hand the model a narrowed workspace. Sourcegraph adds the code intelligence file access alone cannot: symbols, implementations, callers, deprecations, and cross repository blast radius beyond what grep can reliably reach.
+            </p>
           </div>
 
           <div class="guide-panel">
@@ -243,29 +206,29 @@
               <div class="guide-step">
                 <span class="stack-number">01</span>
                 <div>
-                  <strong>Read the task envelope</strong>
-                  <p>Parse links, referenced tickets, repo names, service names, and the specific problem statement before any model call.</p>
+                  <strong>Start before the agent loop</strong>
+                  <p>Parse the task envelope first: links, repo names, service names, referenced tickets, docs, and the actual problem statement.</p>
                 </div>
               </div>
               <div class="guide-step">
                 <span class="stack-number">02</span>
                 <div>
-                  <strong>Resolve non-code context</strong>
-                  <p>Pull Jira, docs, prior discussions, and the operational clues that tell the agent what kind of change it is being asked to make.</p>
+                  <strong>Resolve organisational context</strong>
+                  <p>Fetch Jira, documentation, prior discussion, and ownership signals so the agent knows what change is being requested and why.</p>
                 </div>
               </div>
               <div class="guide-step">
                 <span class="stack-number">03</span>
                 <div>
-                  <strong>Resolve codebase context</strong>
-                  <p>Use semantic search and code intelligence to identify the canonical implementation, adjacent patterns, and downstream consumers.</p>
+                  <strong>Resolve codebase context with Sourcegraph</strong>
+                  <p>Use semantic search and code intelligence to find the canonical implementation, interface realizations, downstream callers, and deprecated patterns across repositories.</p>
                 </div>
               </div>
               <div class="guide-step">
                 <span class="stack-number">04</span>
                 <div>
-                  <strong>Hand the model a narrowed workspace</strong>
-                  <p>The model begins from a ranked working set instead of a blank prompt plus a giant filesystem.</p>
+                  <strong>Hand off a ranked working set</strong>
+                  <p>The model starts from hydrated context instead of exploring a giant filesystem, so it can execute precisely rather than guess what matters.</p>
                 </div>
               </div>
             </div>
@@ -276,12 +239,8 @@
 
     <section class="section section-compact" id="evaluation">
       <div class="container">
-        <div class="section-header centered reveal">
-          <span class="eyebrow">Evaluation Lens</span>
-          <h2 class="section-title">The right question is whether the agent retrieves the right context when the diff is no longer self-contained.</h2>
-          <p class="lede">
-            This is the practical test the article keeps returning to. Do not ask only whether the agent can write plausible code. Ask whether it can discover the right evidence when complexity moves outside the currently open files.
-          </p>
+        <div class="section-header reveal">
+          <span class="eyebrow">Does the agent have the correct context?</span>
         </div>
 
         <div class="question-grid reveal">
@@ -309,21 +268,6 @@
       </div>
     </section>
 
-    <section class="section footer-cta">
-      <div class="container">
-        <div class="cta-panel panel reveal">
-          <span class="eyebrow">Next Step</span>
-          <h2 class="section-title">If context is the constraint, the next step is wiring retrieval into the agent loop on purpose.</h2>
-          <p class="lede">
-            The Sourcegraph MCP guide covers the protocol surface, setup shape, and the concrete retrieval tools that let an agent work from codebase evidence instead of guesswork.
-          </p>
-          <div class="actions actions-center">
-            <a class="btn" href="./mcp-guide.html">Open the Sourcegraph MCP guide</a>
-            <a class="ghost-btn" href="./index.html">Return to the landing page</a>
-          </div>
-        </div>
-      </div>
-    </section>
   </main>
 
   <script src="./assets/site.js"></script>
