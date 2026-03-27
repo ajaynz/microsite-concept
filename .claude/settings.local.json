@@ -3,7 +3,8 @@
     "allow": [
       "WebFetch(domain:background-agents.com)",
       "Bash(brew install:*)",
-      "WebFetch(domain:medium.com)"
+      "WebFetch(domain:medium.com)",
+      "Bash(python3:*)"
     ]
   }
 }

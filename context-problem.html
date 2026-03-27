@@ -22,7 +22,7 @@
     </nav>
   </div>
 
-  <aside class="chapter-rail" aria-label="Page chapters">
+  <aside class="chapter-rail" aria-label="Page chapters" data-chapter-gate="factory-signal">
     <span class="chapter-kicker">Chapters</span>
     <a class="chapter-link is-active" href="#factory-signal" data-chapter-target="factory-signal" aria-current="location">
       <span class="chapter-dot" aria-hidden="true"></span>
@@ -63,22 +63,83 @@
         </div>
 
         <div class="context-hero-plane reveal" aria-hidden="true">
-          <div class="context-hero-terminal context-failure-strip">
-            <article class="context-failure-item">
-              <span class="context-bullet"></span>
-              <h3>Hallucinated symbol</h3>
-              <p>A nearby helper looks plausible enough to ship.</p>
-            </article>
-            <article class="context-failure-item">
-              <span class="context-bullet"></span>
-              <h3>Blast radius missed</h3>
-              <p>Downstream callers never enter the plan in time.</p>
-            </article>
-            <article class="context-failure-item">
-              <span class="context-bullet"></span>
-              <h3>Factory sputters</h3>
-              <p>Review churn, failed tests, and rollback work replace throughput.</p>
-            </article>
+          <div class="context-factory-scene">
+            <div class="factory-shell factory-shell-belt">
+              <div class="factory-shell-header">
+                <span class="factory-shell-title">Software Factory Flow</span>
+                <span class="factory-shell-status">Continuous flow interrupted</span>
+              </div>
+
+              <div class="factory-throughput">
+                <span class="factory-throughput-label">Flow rate</span>
+                <div class="factory-throughput-meter">
+                  <span class="factory-throughput-fill"></span>
+                </div>
+              </div>
+
+              <div class="belt-caption-row">
+                <div class="belt-stage belt-stage-intake">
+                  <span class="belt-stage-kicker">Intake</span>
+                  <h3>Packages enter the line</h3>
+                  <p>Software flows cleanly while context is intact.</p>
+                </div>
+
+                <div class="belt-stage belt-stage-breakage">
+                  <span class="belt-stage-kicker">Downstream</span>
+                  <h3>Output goes dark after the jam</h3>
+                  <p>Consumers stop receiving clean output.</p>
+                </div>
+              </div>
+
+              <div class="belt-track">
+                <div class="belt-lane belt-lane-top"></div>
+                <div class="belt-rollers" aria-hidden="true">
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                  <span></span>
+                </div>
+                <div class="belt-packages" aria-hidden="true">
+                  <span class="belt-package package-good package-good-a">build</span>
+                  <span class="belt-package package-good package-good-b">patch</span>
+                  <span class="belt-package package-good package-good-c">tests</span>
+                  <span class="belt-package package-bad">guess.ts</span>
+                  <span class="belt-package package-stuck package-stuck-a">queue</span>
+                  <span class="belt-package package-stuck package-stuck-b">queue</span>
+                  <span class="belt-package package-stuck package-stuck-c">queue</span>
+                </div>
+                <div class="belt-gate" aria-hidden="true"></div>
+                <div class="belt-downstream-glow" aria-hidden="true"></div>
+              </div>
+
+              <div class="belt-jam-cluster" aria-hidden="true">
+                <span class="jam-node jam-node-core"></span>
+                <span class="jam-node jam-node-a"></span>
+                <span class="jam-node jam-node-b"></span>
+              </div>
+
+              <div class="belt-stage belt-stage-jam">
+                <span class="belt-stage-kicker">Failure point</span>
+                <h3>Hallucinated edit jams the belt</h3>
+                <p>The wrong change reaches the gate and the queue locks behind it.</p>
+              </div>
+
+              <div class="belt-remediation-row">
+                <div class="belt-stage belt-stage-remediation">
+                  <span class="belt-stage-kicker">Remediation</span>
+                  <h3>Reviews, tests, and rollback replace throughput</h3>
+                </div>
+
+                <div class="belt-blockers">
+                  <div class="belt-blocker blocker-context">Missing context</div>
+                  <div class="belt-blocker blocker-tests">Failed tests</div>
+                  <div class="belt-blocker blocker-review">Review queue</div>
+                  <div class="belt-blocker blocker-rollback">Rollback</div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -93,7 +154,7 @@
         <div class="editorial-copy reveal">
           <h2 class="hero-statement hero-statement-wide">Everyone is racing to build a software factory. Not buying one. Building one</h2>
           <p class="lede">
-            A factory isn’t a tool you pick up off a shelf. It’s infrastructure. It’s process. It’s a system that runs reliably at scale without a human shepherding every unit of output. And increasingly, leading engineering organisations are actually building autonomous coding agents that generate code, review, test, and merge pull requests around the clock.
+            A factory is infrastructure. It’s process. It’s a system that runs reliably at scale. And increasingly, autonomous coding agents that generate code, review, test, and merge pull requests around the clock.
           </p>
         </div>
       </div>
@@ -101,29 +162,37 @@
 
     <section class="section section-compact section-market-grid">
       <div class="container">
-        <div class="editorial-rail editorial-rail-matrix reveal">
-          <article class="editorial-point">
-            <div>
-              <h3>Stripe</h3>
-              <p><a href="https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents" target="_blank" rel="noreferrer">Minions</a>: merges over 1,300 AI generated pull requests every week. Background coding agents that go from a Slack message to a CI-passing PR with no human in the loop. Engineers tag the Minion bot in Slack and walk away. The agent runs in an isolated pre-warmed devbox, executes the task, and opens a PR. Over a thousand of these ship to review every week.</p>
+        <div class="market-proof reveal">
+          <article class="market-proof-item">
+            <div class="market-proof-brand">
+              <img class="market-proof-logo market-proof-logo-stripe" src="assets/stripe.svg" alt="Stripe" />
+            </div>
+            <div class="market-proof-copy">
+              <p><a href="https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents" target="_blank" rel="noreferrer">Minions</a> merges over 1,300 AI generated pull requests every week. Background coding agents go from a Slack message to a CI-passing PR with no human in the loop. Engineers tag the Minion bot in Slack and walk away. The agent runs in an isolated pre-warmed devbox, executes the task, and opens a PR.</p>
             </div>
           </article>
-          <article class="editorial-point">
-            <div>
-              <h3>Spotify</h3>
-              <p><a href="https://engineering.atspotify.com/2025/11/spotifys-background-coding-agent-part-1" target="_blank" rel="noreferrer">Honk</a>: has shipped more than 1,500 agent authored PRs into production. Adapting their Fleet Management system into a platform for running Honk, a background coding agent that performs large scale code migrations from natural language instructions, reducing the need for complex transformation scripts and significantly speeding up migrations.</p>
+          <article class="market-proof-item">
+            <div class="market-proof-brand">
+              <img class="market-proof-logo market-proof-logo-spotify" src="assets/spotify.svg" alt="Spotify" />
+            </div>
+            <div class="market-proof-copy">
+              <p><a href="https://engineering.atspotify.com/2025/11/spotifys-background-coding-agent-part-1" target="_blank" rel="noreferrer">Honk</a> has shipped more than 1,500 agent-authored PRs into production. Spotify adapted its fleet management system into a platform for running a background coding agent that performs large-scale code migrations from natural language instructions.</p>
             </div>
           </article>
-          <article class="editorial-point">
-            <div>
-              <h3>Ramp</h3>
-              <p><a href="https://builders.ramp.com/post/why-we-built-our-background-agent" target="_blank" rel="noreferrer">Inspect</a>: internal agent now authors roughly 30% of all merged pull requests. A background agent that runs in sandboxed cloud VMs with full access to their entire development environment: Postgres, Redis, Temporal, RabbitMQ, Sentry, Datadog, LaunchDarkly, Buildkite. Engineers can kick off an Inspect session from Slack, a web UI, or a Chrome extension.</p>
+          <article class="market-proof-item">
+            <div class="market-proof-brand">
+              <img class="market-proof-logo market-proof-logo-ramp" src="assets/ramp.svg" alt="Ramp" />
+            </div>
+            <div class="market-proof-copy">
+              <p><a href="https://builders.ramp.com/post/why-we-built-our-background-agent" target="_blank" rel="noreferrer">Inspect</a> now authors roughly 30% of Ramp’s merged pull requests. It runs inside sandboxed cloud VMs with full access to the real development environment, from Postgres and Redis to Temporal, LaunchDarkly, and Buildkite.</p>
             </div>
           </article>
-          <article class="editorial-point">
-            <div>
-              <h3>Uber</h3>
-              <p><a href="https://newsletter.pragmaticengineer.com/p/how-uber-uses-ai-for-development" target="_blank" rel="noreferrer">Minion</a> (separate naming coincidence from Stripe’s): has 84% of developers using agentic tooling monthly. A background agent with full monorepo access. On top of that, they built an internal MCP gateway that exposes several internal endpoints; source code, Jira, Slack, engineering documentation and etc. as a unified context surface for agents.</p>
+          <article class="market-proof-item">
+            <div class="market-proof-brand">
+              <img class="market-proof-logo market-proof-logo-uber" src="assets/uber.svg" alt="Uber" />
+            </div>
+            <div class="market-proof-copy">
+              <p><a href="https://newsletter.pragmaticengineer.com/p/how-uber-uses-ai-for-development" target="_blank" rel="noreferrer">Minion</a> has 84% of Uber developers using agentic tooling monthly. Uber also built an internal MCP gateway that exposes source code, Jira, Slack, and engineering documentation as a unified context surface for agents.</p>
             </div>
           </article>
         </div>
@@ -141,30 +210,26 @@
           <article class="evaluation-step">
             <span class="evaluation-index">01</span>
             <div>
-              <h3>The failure is usually not “the model is weak.”</h3>
-              <p>The recurring problem is that the agent cannot find the right definitions, callers, history, conventions, or downstream dependencies in time.</p>
+              <p><strong>The failure is usually not “the model is weak.”</strong> The recurring problem is that the agent cannot find the right definitions, callers, history, conventions, or downstream dependencies in time.</p>
             </div>
           </article>
           <article class="evaluation-step">
             <span class="evaluation-index">02</span>
             <div>
-              <h3>Prompting humans to hand-carry context does not scale.</h3>
-              <p>If users have to guess the right grep commands or manually paste the relevant files, the factory depends on a human preprocessor, not a reliable context system.</p>
+              <p><strong>Prompting humans to hand-carry context does not scale.</strong> If users have to guess the right grep commands or manually paste the relevant files, the factory depends on a human preprocessor, not a reliable context system.</p>
             </div>
           </article>
           <article class="evaluation-step">
             <span class="evaluation-index">03</span>
             <div>
-              <h3>Bad retrieval fails quietly.</h3>
-              <p>Too much context wastes reasoning budget. Too little context produces plausible output that feels credible but misses the actual implementation and blast radius.</p>
+              <p><strong>Bad retrieval fails quietly.</strong> Too much context wastes reasoning budget. Too little context produces plausible output that feels credible but misses the actual implementation and blast radius.</p>
             </div>
           </article>
           <article class="evaluation-step">
             <span class="evaluation-index">04</span>
             <div>
-              <h3>Most benchmarks barely test this layer.</h3>
-              <p>Self-contained coding tasks hide the real retrieval problem. Cross-repository, multi-service work is where weak context surfaces are exposed.</p>
-              <p>Stephanie Jarmak makes the same point in <a href="https://medium.com/@steph.jarmak/i-couldnt-find-a-good-enough-benchmark-for-large-scale-software-development-so-i-built-one-d2cc5946e963" target="_blank" rel="noreferrer">her benchmark writeup</a>.</p>
+              <p><strong>Most benchmarks barely test this layer.</strong> Self-contained coding tasks hide the real retrieval problem. Cross-repository, multi-service work is where weak context surfaces are exposed.</p>
+              <p>For further reading, <a href="https://medium.com/@steph.jarmak/i-couldnt-find-a-good-enough-benchmark-for-large-scale-software-development-so-i-built-one-d2cc5946e963" target="_blank" rel="noreferrer">see why we wrote our own benchmark</a>.</p>
             </div>
           </article>
         </div>
@@ -178,35 +243,69 @@
           <h2 class="hero-statement hero-statement-wide">A software factory needs more than code access.</h2>
         </div>
 
-        <div class="stack-grid reveal">
-          <div class="panel page-side-panel">
-            <span class="eyebrow">Why Factories Stall</span>
-            <p class="lede">
-              Context is not one thing. It is a layered production input. Code, runtime state, and team knowledge each answer a different class of question, and missing any one of them can break the loop.
-            </p>
-            <ul class="mini-list">
-              <li>Codebase context answers what exists, where it lives, and what depends on it.</li>
-              <li>Operational context answers what the system is doing right now and where it is failing.</li>
-              <li>Organisational context answers what the team already decided, owns, and expects.</li>
-            </ul>
+        <div class="context-fusion reveal">
+          <div class="context-fusion-copy">
           </div>
 
-          <div class="stack-list">
-            <article class="stack-card layer-1">
-              <span class="stack-number">01</span>
-              <h3>Codebase Context</h3>
-              <p>Definitions, references, symbol search, semantic diffs, historical changes, and cross-repository dependency understanding. This is the layer the article connects directly to Sourcegraph.</p>
+          <div class="context-fusion-stage" aria-hidden="true">
+            <div class="context-fusion-grid"></div>
+
+            <article class="context-layer context-layer-codebase">
+              <div class="context-layer-copy">
+                <h3>Codebase Context</h3>
+                <p class="context-layer-desc">Answers what exists, where it lives, and what depends on it.</p>
+                <div class="context-layer-tags">
+                  <span>Definitions</span>
+                  <span>References</span>
+                  <span>Diffs</span>
+                  <span>History</span>
+                </div>
+              </div>
             </article>
-            <article class="stack-card layer-2">
-              <span class="stack-number">02</span>
-              <h3>Operational Context</h3>
-              <p>Errors, screenshots, feature flags, queues, deploy state, and observability. This is what lets an agent debug the live system instead of just editing static files.</p>
+
+            <article class="context-layer context-layer-operational">
+              <div class="context-layer-copy">
+                <h3>Operational Context</h3>
+                <p class="context-layer-desc">Answers what the system is doing right now and where it is failing.</p>
+                <div class="context-layer-tags">
+                  <span>Errors</span>
+                  <span>Queues</span>
+                  <span>Flags</span>
+                  <span>Observability</span>
+                </div>
+              </div>
             </article>
-            <article class="stack-card layer-3">
-              <span class="stack-number">03</span>
-              <h3>Organisational Context</h3>
-              <p>Jira tickets, Slack threads, ADRs, docs, and ownership rules. This is what makes the resulting code fit the team instead of merely compiling.</p>
+
+            <article class="context-layer context-layer-organisational">
+              <div class="context-layer-copy">
+                <h3>Organisational Context</h3>
+                <p class="context-layer-desc">Answers what the team already decided, owns, and expects.</p>
+                <div class="context-layer-tags">
+                  <span>Jira</span>
+                  <span>Slack</span>
+                  <span>ADRs</span>
+                  <span>Ownership</span>
+                </div>
+              </div>
             </article>
+
+            <div class="context-merge-flow" aria-hidden="true">
+              <span class="context-merge-count">3x</span>
+              <span class="context-merge-symbol">=</span>
+              <p>combined context</p>
+            </div>
+
+            <div class="context-merge-core">
+              <span class="context-core-ring context-core-ring-a"></span>
+              <span class="context-core-ring context-core-ring-b"></span>
+              <div class="context-core-node"></div>
+              <div class="context-core-copy">
+                <span class="context-core-kicker">Merged Signal</span>
+                <strong>Full Context</strong>
+                <p>Code, runtime, and team intent aligned.</p>
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -219,51 +318,73 @@
           <h2 class="hero-statement hero-statement-wide">Context design should be a foundational consideration in how the software factory operates</h2>
         </div>
 
-        <div class="page-hero-grid reveal">
-          <div class="editorial-copy">
-            <p class="lede">
-              Stripe's Minion architecture makes the pattern clear: context is solved before the agent loop starts, not inside it.
-            </p>
-            <p class="lede">
-              Toolshed MCP exposes hundreds of tools across internal systems, docs, tickets, and code intelligence. Before any LLM call, a deterministic orchestrator resolves task references, fetches Jira and docs, runs code search, and hydrates the context window.
-            </p>
-            <p class="lede">
-              That is the pattern: front load the intelligence, assemble context deterministically, then hand the model a narrowed workspace. Sourcegraph adds the code intelligence file access alone cannot: symbols, implementations, callers, deprecations, and cross repository blast radius beyond what grep can reliably reach.
-            </p>
-          </div>
-
-          <div class="guide-panel">
-            <span class="eyebrow">Prehydration Flow</span>
-            <div class="guide-steps">
-              <div class="guide-step">
-                <span class="stack-number">01</span>
-                <div>
-                  <strong>Start before the agent loop</strong>
-                  <p>Parse the task envelope first: links, repo names, service names, referenced tickets, docs, and the actual problem statement.</p>
-                </div>
-              </div>
-              <div class="guide-step">
-                <span class="stack-number">02</span>
-                <div>
-                  <strong>Resolve organisational context</strong>
-                  <p>Fetch Jira, documentation, prior discussion, and ownership signals so the agent knows what change is being requested and why.</p>
-                </div>
-              </div>
-              <div class="guide-step">
-                <span class="stack-number">03</span>
-                <div>
-                  <strong>Resolve codebase context with Sourcegraph</strong>
-                  <p>Use semantic search and code intelligence to find the canonical implementation, interface realizations, downstream callers, and deprecated patterns across repositories.</p>
-                </div>
-              </div>
-              <div class="guide-step">
-                <span class="stack-number">04</span>
-                <div>
-                  <strong>Hand off a ranked working set</strong>
-                  <p>The model starts from hydrated context instead of exploring a giant filesystem, so it can execute precisely rather than guess what matters.</p>
-                </div>
+        <div class="prehydration-flow reveal" aria-label="Agents receive pre-hydrated context before execution">
+          <div class="ph-sources">
+            <div class="ph-source">
+              <span class="ph-source-dot"></span>
+              <div class="ph-source-text">
+                <strong>Task Envelope</strong>
+                <span>Jira · Slack · intent</span>
               </div>
             </div>
+            <div class="ph-source">
+              <span class="ph-source-dot"></span>
+              <div class="ph-source-text">
+                <strong>Docs</strong>
+                <span>ADRs · runbooks · specs</span>
+              </div>
+            </div>
+            <div class="ph-source">
+              <span class="ph-source-dot"></span>
+              <div class="ph-source-text">
+                <strong>Live System Evidence</strong>
+                <span>Sentry · Datadog · metrics</span>
+              </div>
+            </div>
+            <div class="ph-source">
+              <span class="ph-source-dot"></span>
+              <div class="ph-source-text">
+                <strong>Code Graph</strong>
+                <span>Symbols · callers · deps</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="ph-connector ph-connector-gather" aria-hidden="true">
+            <svg class="ph-connector-svg" viewBox="0 0 56 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+              <line class="ph-svg-line" x1="2" y1="40" x2="54" y2="160"/>
+              <line class="ph-svg-line" x1="2" y1="107" x2="54" y2="160"/>
+              <line class="ph-svg-line" x1="2" y1="213" x2="54" y2="160"/>
+              <line class="ph-svg-line" x1="2" y1="280" x2="54" y2="160"/>
+            </svg>
+          </div>
+
+          <div class="ph-window">
+            <span class="ph-window-eyebrow">Context Window</span>
+            <div class="ph-window-items">
+              <div class="ph-window-item">Task Envelope</div>
+              <div class="ph-window-item">Docs</div>
+              <div class="ph-window-item">Live Evidence</div>
+              <div class="ph-window-item">Code Graph</div>
+            </div>
+            <div class="ph-window-status">
+              <span class="ph-window-status-dot"></span>
+              <span>Hydrated — agent ready</span>
+            </div>
+          </div>
+
+          <div class="ph-connector ph-connector-handoff" aria-hidden="true">
+            <div class="ph-handoff-track">
+              <span class="ph-handoff-pulse"></span>
+            </div>
+            <span class="ph-handoff-label">before execution</span>
+          </div>
+
+          <div class="ph-agent">
+            <span class="ph-agent-eyebrow">Agent</span>
+            <strong class="ph-agent-heading">Executes</strong>
+            <p class="ph-agent-body">Starts from full context. No cold-start retrieval.</p>
+            <span class="ph-agent-ring" aria-hidden="true"></span>
           </div>
         </div>
       </div>
@@ -326,5 +447,64 @@
   </main>
 
   <script src="./assets/site.js"></script>
+  <script>
+  (function () {
+    var diagram = document.querySelector('.prehydration-flow');
+    if (!diagram) return;
+
+    var sources = diagram.querySelectorAll('.ph-source');
+    var items   = diagram.querySelectorAll('.ph-window-item');
+    var window_ = diagram.querySelector('.ph-window');
+    var gather  = diagram.querySelector('.ph-connector-gather');
+    var handoff = diagram.querySelector('.ph-connector-handoff');
+    var agent   = diagram.querySelector('.ph-agent');
+
+    var STEP     = 1600;   // ms per source
+    var HOLD     = 2400;   // ms agent stays active before reset
+    var PAUSE    = 800;    // ms gap after reset before next cycle
+
+    function reset() {
+      sources.forEach(function (s) { s.classList.remove('is-active'); });
+      items.forEach(function (i)   { i.classList.remove('is-loaded'); });
+      if (window_) window_.classList.remove('is-ready');
+      if (gather)  gather.classList.remove('is-flowing');
+      if (handoff) handoff.classList.remove('is-active');
+      if (agent)   agent.classList.remove('is-active');
+    }
+
+    function cycle() {
+      reset();
+      var total = sources.length;
+
+      sources.forEach(function (source, i) {
+        setTimeout(function () {
+          sources.forEach(function (s) { s.classList.remove('is-active'); });
+          source.classList.add('is-active');
+          if (gather) gather.classList.add('is-flowing');
+          if (items[i]) items[i].classList.add('is-loaded');
+        }, i * STEP);
+      });
+
+      // Window ready
+      setTimeout(function () {
+        sources.forEach(function (s) { s.classList.remove('is-active'); });
+        if (window_) window_.classList.add('is-ready');
+        if (gather)  gather.classList.remove('is-flowing');
+        if (handoff) handoff.classList.add('is-active');
+      }, total * STEP);
+
+      // Agent activates
+      setTimeout(function () {
+        if (handoff) handoff.classList.remove('is-active');
+        if (agent)   agent.classList.add('is-active');
+      }, total * STEP + 800);
+
+      // Schedule next cycle
+      setTimeout(cycle, total * STEP + 800 + HOLD + PAUSE);
+    }
+
+    setTimeout(cycle, 600);
+  })();
+  </script>
 </body>
 </html>
