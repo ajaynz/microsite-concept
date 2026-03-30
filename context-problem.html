@@ -130,17 +130,18 @@
     .f-footnotes-list {
       margin: 0;
       padding: 0 0 0 1.35rem;
-      color: var(--text-dim);
+      color: var(--text-soft);
       font-size: 0.88rem;
       line-height: 1.65;
     }
 
     .f-footnotes-list a {
-      color: var(--f-gold);
+      color: rgba(255, 194, 71, 0.55);
       word-break: break-all;
     }
 
     .f-footnotes-list a:hover {
+      color: rgba(255, 194, 71, 0.85);
       text-decoration: underline;
     }
 
@@ -2005,15 +2006,15 @@
               font-family="Poly Sans Mono, monospace" font-size="8.5"
               fill="rgba(255,194,71,0.55)" letter-spacing="0.18em">AGENT</text>
 
-            <!-- Ring labels: yellow #ffc247 = inner codebase ring; teal #69d9d0 = middle operational ring -->
-            <text x="98" y="178" text-anchor="middle"
-              font-family="Poly Sans Mono, monospace" font-size="9" fill="#ffc247" fill-opacity="0.8" letter-spacing="0.09em">CODEBASE</text>
+            <!-- Ring labels: left arc — outer (smallest x) → inner (largest x). ORG on orange, OPS on teal, CODE on gold. -->
+            <text x="34" y="202" text-anchor="middle" class="factory-org-ring-label"
+              font-family="Poly Sans Mono, monospace" font-size="8" letter-spacing="0.06em">ORGANISATIONAL</text>
 
-            <text x="142" y="195" text-anchor="middle"
+            <text x="112" y="181" text-anchor="middle"
               font-family="Poly Sans Mono, monospace" font-size="8.5" fill="#69d9d0" fill-opacity="0.72" letter-spacing="0.07em">OPERATIONAL</text>
 
-            <text x="46" y="200" text-anchor="middle" class="factory-org-ring-label"
-              font-family="Poly Sans Mono, monospace" font-size="8" letter-spacing="0.06em">ORGANISATIONAL</text>
+            <text x="156" y="193" text-anchor="middle"
+              font-family="Poly Sans Mono, monospace" font-size="9" fill="#ffc247" fill-opacity="0.8" letter-spacing="0.09em">CODEBASE</text>
           </svg>
         </div>
 
