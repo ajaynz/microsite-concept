@@ -38,17 +38,10 @@
         <span class="chapter-title">Failure Mode</span>
       </span>
     </a>
-    <a class="chapter-link" href="#context-hierarchy" data-chapter-target="context-hierarchy">
-      <span class="chapter-dot" aria-hidden="true"></span>
-      <span class="chapter-copy">
-        <span class="chapter-index">03</span>
-        <span class="chapter-title">Hierarchy</span>
-      </span>
-    </a>
     <a class="chapter-link" href="#evaluation" data-chapter-target="evaluation">
       <span class="chapter-dot" aria-hidden="true"></span>
       <span class="chapter-copy">
-        <span class="chapter-index">04</span>
+        <span class="chapter-index">03</span>
         <span class="chapter-title">Evaluation</span>
       </span>
     </a>
@@ -206,107 +199,43 @@
           <h2 class="hero-statement hero-statement-wide">Every serious agent team keeps rediscovering the same failure mode.</h2>
         </div>
 
-        <div class="evaluation-track reveal">
-          <article class="evaluation-step">
-            <span class="evaluation-index">01</span>
-            <div>
-              <p><strong>The failure is usually not “the model is weak.”</strong> The recurring problem is that the agent cannot find the right definitions, callers, history, conventions, or downstream dependencies in time.</p>
-            </div>
-          </article>
-          <article class="evaluation-step">
-            <span class="evaluation-index">02</span>
-            <div>
-              <p><strong>Prompting humans to hand-carry context does not scale.</strong> If users have to guess the right grep commands or manually paste the relevant files, the factory depends on a human preprocessor, not a reliable context system.</p>
-            </div>
-          </article>
-          <article class="evaluation-step">
-            <span class="evaluation-index">03</span>
-            <div>
-              <p><strong>Bad retrieval fails quietly.</strong> Too much context wastes reasoning budget. Too little context produces plausible output that feels credible but misses the actual implementation and blast radius.</p>
-            </div>
-          </article>
-          <article class="evaluation-step">
-            <span class="evaluation-index">04</span>
-            <div>
-              <p><strong>Most benchmarks barely test this layer.</strong> Self-contained coding tasks hide the real retrieval problem. Cross-repository, multi-service work is where weak context surfaces are exposed.</p>
-              <p>For further reading, <a href="https://medium.com/@steph.jarmak/i-couldnt-find-a-good-enough-benchmark-for-large-scale-software-development-so-i-built-one-d2cc5946e963" target="_blank" rel="noreferrer">see why we wrote our own benchmark</a>.</p>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
-
-    <section class="section section-compact" id="context-hierarchy">
-      <div class="container">
-        <div class="section-header reveal">
-          <span class="eyebrow">Context Hierarchy</span>
-          <h2 class="hero-statement hero-statement-wide">A software factory needs more than code access.</h2>
-        </div>
-
-        <div class="context-fusion reveal">
-          <div class="context-fusion-copy">
+        <div class="failure-canvas reveal" aria-label="Failure mode visual">
+          <div class="failure-canvas-grid" aria-hidden="true"></div>
+          <div class="failure-canvas-core">
+            <span class="failure-canvas-kicker">Missing context</span>
+            <strong>Factory output breaks here</strong>
+            <p>The recurring issue is retrieval quality, not just model capability.</p>
           </div>
 
-          <div class="context-fusion-stage" aria-hidden="true">
-            <div class="context-fusion-grid"></div>
+          <span class="failure-link failure-link-a" aria-hidden="true"></span>
+          <span class="failure-link failure-link-b" aria-hidden="true"></span>
+          <span class="failure-link failure-link-c" aria-hidden="true"></span>
+          <span class="failure-link failure-link-d" aria-hidden="true"></span>
 
-            <article class="context-layer context-layer-codebase">
-              <div class="context-layer-copy">
-                <h3>Codebase Context</h3>
-                <p class="context-layer-desc">Answers what exists, where it lives, and what depends on it.</p>
-                <div class="context-layer-tags">
-                  <span>Definitions</span>
-                  <span>References</span>
-                  <span>Diffs</span>
-                  <span>History</span>
-                </div>
-              </div>
-            </article>
+          <article class="failure-note failure-note-a">
+            <span class="failure-note-index">01</span>
+            <h3>Wrong source of truth</h3>
+            <p>The agent misses the real implementation.</p>
+          </article>
 
-            <article class="context-layer context-layer-operational">
-              <div class="context-layer-copy">
-                <h3>Operational Context</h3>
-                <p class="context-layer-desc">Answers what the system is doing right now and where it is failing.</p>
-                <div class="context-layer-tags">
-                  <span>Errors</span>
-                  <span>Queues</span>
-                  <span>Flags</span>
-                  <span>Observability</span>
-                </div>
-              </div>
-            </article>
+          <article class="failure-note failure-note-b">
+            <span class="failure-note-index">02</span>
+            <h3>Human context ferry</h3>
+            <p>People start hand-carrying grep output and files.</p>
+          </article>
 
-            <article class="context-layer context-layer-organisational">
-              <div class="context-layer-copy">
-                <h3>Organisational Context</h3>
-                <p class="context-layer-desc">Answers what the team already decided, owns, and expects.</p>
-                <div class="context-layer-tags">
-                  <span>Jira</span>
-                  <span>Slack</span>
-                  <span>ADRs</span>
-                  <span>Ownership</span>
-                </div>
-              </div>
-            </article>
+          <article class="failure-note failure-note-c">
+            <span class="failure-note-index">03</span>
+            <h3>Quiet failure</h3>
+            <p>Answers still sound plausible while impact is wrong.</p>
+          </article>
 
-            <div class="context-merge-flow" aria-hidden="true">
-              <span class="context-merge-count">3x</span>
-              <span class="context-merge-symbol">=</span>
-              <p>combined context</p>
-            </div>
-
-            <div class="context-merge-core">
-              <span class="context-core-ring context-core-ring-a"></span>
-              <span class="context-core-ring context-core-ring-b"></span>
-              <div class="context-core-node"></div>
-              <div class="context-core-copy">
-                <span class="context-core-kicker">Merged Signal</span>
-                <strong>Full Context</strong>
-                <p>Code, runtime, and team intent aligned.</p>
-              </div>
-            </div>
-
-          </div>
+          <article class="failure-note failure-note-d">
+            <span class="failure-note-index">04</span>
+            <h3>Benchmarks miss it</h3>
+            <p>Small tasks hide the retrieval problem.</p>
+            <p class="failure-note-meta"><a href="https://medium.com/@steph.jarmak/i-couldnt-find-a-good-enough-benchmark-for-large-scale-software-development-so-i-built-one-d2cc5946e963" target="_blank" rel="noreferrer">Why we wrote our own benchmark</a></p>
+          </article>
         </div>
       </div>
     </section>
@@ -323,53 +252,46 @@
             <div class="ph-source">
               <span class="ph-source-dot"></span>
               <div class="ph-source-text">
-                <strong>Task Envelope</strong>
-                <span>Jira · Slack · intent</span>
+                <strong>Organisational Context</strong>
+                <span>PRD - Slack threads - Documentation - Data which aligns to the team</span>
               </div>
             </div>
             <div class="ph-source">
               <span class="ph-source-dot"></span>
               <div class="ph-source-text">
-                <strong>Docs</strong>
-                <span>ADRs · runbooks · specs</span>
+                <strong>Operational Context</strong>
+                <span>Errors - screenshots - feature flags - Observability - deploy state - debug the live system</span>
               </div>
             </div>
             <div class="ph-source">
               <span class="ph-source-dot"></span>
               <div class="ph-source-text">
-                <strong>Live System Evidence</strong>
-                <span>Sentry · Datadog · metrics</span>
-              </div>
-            </div>
-            <div class="ph-source">
-              <span class="ph-source-dot"></span>
-              <div class="ph-source-text">
-                <strong>Code Graph</strong>
-                <span>Symbols · callers · deps</span>
+                <strong>Codebase Context</strong>
+                <span>definitions - references - diff - deep seearch - code - fetched from Sourcegraph</span>
               </div>
             </div>
           </div>
 
           <div class="ph-connector ph-connector-gather" aria-hidden="true">
             <svg class="ph-connector-svg" viewBox="0 0 56 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-              <line class="ph-svg-line" x1="2" y1="40" x2="54" y2="160"/>
-              <line class="ph-svg-line" x1="2" y1="107" x2="54" y2="160"/>
-              <line class="ph-svg-line" x1="2" y1="213" x2="54" y2="160"/>
-              <line class="ph-svg-line" x1="2" y1="280" x2="54" y2="160"/>
+              <line class="ph-svg-line" x1="2" y1="52" x2="54" y2="160"/>
+              <line class="ph-svg-line" x1="2" y1="160" x2="54" y2="160"/>
+              <line class="ph-svg-line" x1="2" y1="268" x2="54" y2="160"/>
             </svg>
           </div>
 
           <div class="ph-window">
             <span class="ph-window-eyebrow">Context Window</span>
             <div class="ph-window-items">
-              <div class="ph-window-item">Task Envelope</div>
-              <div class="ph-window-item">Docs</div>
-              <div class="ph-window-item">Live Evidence</div>
-              <div class="ph-window-item">Code Graph</div>
+              <div class="ph-window-item">Jira issue</div>
+              <div class="ph-window-item">Slack conversation</div>
+              <div class="ph-window-item">Documentation</div>
+              <div class="ph-window-item">Sentry</div>
+              <div class="ph-window-item">Sourcegraph</div>
             </div>
             <div class="ph-window-status">
               <span class="ph-window-status-dot"></span>
-              <span>Hydrated — agent ready</span>
+              <span>Precise code base context is foundational</span>
             </div>
           </div>
 
@@ -383,7 +305,7 @@
           <div class="ph-agent">
             <span class="ph-agent-eyebrow">Agent</span>
             <strong class="ph-agent-heading">Executes</strong>
-            <p class="ph-agent-body">Starts from full context. No cold-start retrieval.</p>
+            <p class="ph-agent-body">Agent starts executing with precise context.</p>
             <span class="ph-agent-ring" aria-hidden="true"></span>
           </div>
         </div>
@@ -396,48 +318,61 @@
           <span class="eyebrow">Does the agent have the correct context?</span>
         </div>
 
-        <div class="context-audit panel reveal">
-          <div class="context-audit-intro">
+        <div class="context-map reveal" aria-label="Context audit map">
+          <div class="context-map-intro">
             <p class="lede">
               A good answer depends on more than file access. It depends on reaching the real implementation, understanding impact, pulling the right history, and showing its work.
             </p>
           </div>
 
-          <div class="context-audit-list" aria-label="Context audit checks">
-            <article class="context-check">
-              <span class="context-check-index">01</span>
-              <div class="context-check-copy">
-                <h3>Can it find the canonical implementation?</h3>
-                <p>If a symbol is implemented in a shared service or hidden behind an interface, the agent should still land on the real source of truth instead of a nearby lookalike.</p>
+          <div class="context-map-stage">
+            <div class="context-map-grid" aria-hidden="true"></div>
+            <div class="context-map-halo" aria-hidden="true"></div>
+            <span class="context-map-link context-map-link-a" aria-hidden="true"></span>
+            <span class="context-map-link context-map-link-b" aria-hidden="true"></span>
+            <span class="context-map-link context-map-link-c" aria-hidden="true"></span>
+            <span class="context-map-link context-map-link-d" aria-hidden="true"></span>
+
+            <div class="context-map-core">
+              <span class="context-map-core-kicker">Audit target</span>
+              <strong>Correct Context</strong>
+              <p>Real implementation, blast radius, evidence, and team history aligned before reasoning begins.</p>
+            </div>
+
+            <article class="context-probe context-probe-a">
+              <div class="context-probe-head">
+                <span class="context-probe-index">01</span>
+                <h3>Canonical implementation</h3>
               </div>
-              <p class="context-check-note">Find the actual source of truth before reasoning starts.</p>
+              <p>If the logic lives in a shared service or behind an interface, the agent still needs the real source of truth.</p>
+              <p class="context-probe-note">Find the actual implementation first.</p>
             </article>
 
-            <article class="context-check">
-              <span class="context-check-index">02</span>
-              <div class="context-check-copy">
-                <h3>Can it trace blast radius across repositories?</h3>
-                <p>The agent should know who calls the thing being changed, which consumers are downstream, and where the migration risk actually sits.</p>
+            <article class="context-probe context-probe-b">
+              <div class="context-probe-head">
+                <span class="context-probe-index">02</span>
+                <h3>Blast radius</h3>
               </div>
-              <p class="context-check-note">File access alone stops being enough at repository boundaries.</p>
+              <p>The system should trace callers, downstream consumers, and migration risk across repository boundaries.</p>
+              <p class="context-probe-note">File access alone stops being enough here.</p>
             </article>
 
-            <article class="context-check">
-              <span class="context-check-index">03</span>
-              <div class="context-check-copy">
-                <h3>Can it explain the answer with evidence?</h3>
-                <p>A trustworthy output points back to paths, symbols, references, or history. It should feel inspectable, not magical.</p>
+            <article class="context-probe context-probe-c">
+              <div class="context-probe-head">
+                <span class="context-probe-index">03</span>
+                <h3>Evidence trail</h3>
               </div>
-              <p class="context-check-note">A reviewer should be able to verify how the agent knew what it knew.</p>
+              <p>A trustworthy answer points back to paths, symbols, references, or history instead of feeling magical.</p>
+              <p class="context-probe-note">A reviewer should be able to inspect how it knew.</p>
             </article>
 
-            <article class="context-check">
-              <span class="context-check-index">04</span>
-              <div class="context-check-copy">
-                <h3>Can it bring in history and conventions without flooding the window?</h3>
-                <p>Retrieval quality is precision, not volume. The system should surface the few artifacts that explain prior intent, ownership, and the existing team pattern.</p>
+            <article class="context-probe context-probe-d">
+              <div class="context-probe-head">
+                <span class="context-probe-index">04</span>
+                <h3>Precision, not volume</h3>
               </div>
-              <p class="context-check-note">Too much context is another form of failure.</p>
+              <p>The agent should surface the few artifacts that explain prior intent, ownership, and the existing team pattern.</p>
+              <p class="context-probe-note">Too much context is another form of failure.</p>
             </article>
           </div>
         </div>
@@ -458,6 +393,11 @@
     var gather  = diagram.querySelector('.ph-connector-gather');
     var handoff = diagram.querySelector('.ph-connector-handoff');
     var agent   = diagram.querySelector('.ph-agent');
+    var loadGroups = [
+      [0, 1, 2],
+      [3],
+      [4]
+    ];
 
     var STEP     = 1600;   // ms per source
     var HOLD     = 2400;   // ms agent stays active before reset
@@ -481,7 +421,9 @@
           sources.forEach(function (s) { s.classList.remove('is-active'); });
           source.classList.add('is-active');
           if (gather) gather.classList.add('is-flowing');
-          if (items[i]) items[i].classList.add('is-loaded');
+          (loadGroups[i] || []).forEach(function (itemIndex) {
+            if (items[itemIndex]) items[itemIndex].classList.add('is-loaded');
+          });
         }, i * STEP);
       });
 
