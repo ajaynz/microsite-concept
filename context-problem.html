@@ -1537,6 +1537,17 @@
       .factory-gallery-track    { grid-auto-columns: minmax(18.5rem, 86vw); }
       .factory-hero-gallery .factory-gallery-track { grid-auto-columns: minmax(15.75rem, 78vw); }
     }
+
+    /* Chapter rail: longer labels wrap on this page */
+    .factory-page .chapter-rail {
+      width: 14.5rem;
+    }
+    .factory-page .chapter-rail .chapter-copy {
+      white-space: normal;
+    }
+    .factory-page .chapter-rail .chapter-title {
+      line-height: 1.28;
+    }
   </style>
 </head>
 <body class="factory-page">
@@ -1547,15 +1558,47 @@
       <a class="utility-link utility-link-brand" href="./index.html">
         <span class="brand-text">Context Engine</span>
       </a>
-      <a class="utility-link" href="./context-problem2.html" aria-current="page">Software Factory</a>
+      <a class="utility-link" href="./context-problem.html" aria-current="page">Software Factory</a>
       <a class="utility-link" href="./mcp-guide.html">Sourcegraph MCP</a>
     </nav>
   </div>
 
+  <aside class="chapter-rail" aria-label="Page chapters">
+    <span class="chapter-kicker">Chapters</span>
+    <a class="chapter-link is-active" href="#factory-primer" data-chapter-target="factory-primer" aria-current="location">
+      <span class="chapter-dot" aria-hidden="true"></span>
+      <span class="chapter-copy">
+        <span class="chapter-index">01</span>
+        <span class="chapter-title">Software factory</span>
+      </span>
+    </a>
+    <a class="chapter-link" href="#why-context-skipped" data-chapter-target="why-context-skipped">
+      <span class="chapter-dot" aria-hidden="true"></span>
+      <span class="chapter-copy">
+        <span class="chapter-index">02</span>
+        <span class="chapter-title">Context Problem</span>
+      </span>
+    </a>
+    <a class="chapter-link" href="#context-layers" data-chapter-target="context-layers">
+      <span class="chapter-dot" aria-hidden="true"></span>
+      <span class="chapter-copy">
+        <span class="chapter-index">03</span>
+        <span class="chapter-title">Designing Context Architectures</span>
+      </span>
+    </a>
+    <a class="chapter-link" href="#stripe-minion" data-chapter-target="stripe-minion">
+      <span class="chapter-dot" aria-hidden="true"></span>
+      <span class="chapter-copy">
+        <span class="chapter-index">04</span>
+        <span class="chapter-title">Context design in practice</span>
+      </span>
+    </a>
+  </aside>
+
   <!-- ════════════════════════════════════════
        HERO
   ════════════════════════════════════════ -->
-  <section class="factory-hero">
+  <section class="factory-hero" id="factory-hero">
     <div class="factory-hero-bg" aria-hidden="true">
       <div class="factory-hero-grid"></div>
     </div>
@@ -1654,7 +1697,7 @@
   <!-- ════════════════════════════════════════
        SOFTWARE FACTORY PRIMER
   ════════════════════════════════════════ -->
-  <section class="factory-primer">
+  <section class="factory-primer" id="factory-primer">
     <div class="container">
       <div class="factory-primer-inner">
         <div class="factory-primer-row">
@@ -1762,7 +1805,7 @@
   <!-- ════════════════════════════════════════
        WHY CONTEXT IS OVERLOOKED
   ════════════════════════════════════════ -->
-  <section class="f-section">
+  <section class="f-section" id="why-context-skipped">
     <div class="container">
       <div class="reveal">
         <div class="f-kicker f-kicker--sentence">Context isn't an input to the factory. It's the foundation.</div>
@@ -1827,7 +1870,7 @@
   <!-- ════════════════════════════════════════
        CONTEXT POISONING (added insight)
   ════════════════════════════════════════ -->
-  <section class="f-section factory-poison">
+  <section class="f-section factory-poison" id="context-poisoning">
     <div class="container">
       <div class="factory-poison-layout">
 
@@ -1866,7 +1909,7 @@
   <!-- ════════════════════════════════════════
        THE CONTRAST
   ════════════════════════════════════════ -->
-  <section class="f-section">
+  <section class="f-section" id="retrieval-contrast">
     <div class="container">
       <div class="reveal">
         <div class="f-kicker">The core problem</div>
@@ -1965,7 +2008,7 @@
   <!-- ════════════════════════════════════════
        THREE CONTEXT LAYERS
   ════════════════════════════════════════ -->
-  <section class="f-section">
+  <section class="f-section" id="context-layers">
     <div class="container">
       <div class="factory-layers-layout">
 
@@ -2070,7 +2113,7 @@ Each layer is non-negotiable. Together they make output that is genuinely produc
   <!-- ════════════════════════════════════════
        STRIPE ARCHITECTURE
   ════════════════════════════════════════ -->
-  <section class="f-section stripe-arch-section">
+  <section class="f-section stripe-arch-section" id="stripe-minion">
     <div class="container">
       <div class="stripe-arch-inner">
 
@@ -2142,7 +2185,7 @@ Each layer is non-negotiable. Together they make output that is genuinely produc
   <!-- ════════════════════════════════════════
        CLOSE
   ════════════════════════════════════════ -->
-  <section class="factory-close">
+  <section class="factory-close" id="context-foundation">
     <div class="container">
 
       <div class="factory-close-inner">

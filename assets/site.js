@@ -289,7 +289,11 @@
     if (!hash) return;
 
     const apply = () => {
-      const selector = hash === "#inside-outside-loop" ? "#context-loop" : hash;
+      const hashRedirects = {
+        "#inside-outside-loop": "#agent-loop",
+        "#context-loop": "#agent-loop",
+      };
+      const selector = hashRedirects[hash] || hash;
       const target = qs(selector);
       if (!target) return;
       scrollToSection(target, "auto");
