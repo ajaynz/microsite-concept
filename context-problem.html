@@ -3,13 +3,1386 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>The Software Factory Is Here | Context Problem Deep Dive</title>
-  <meta name="description" content="An editorial microsite page on why background coding agents are arriving fast, why context is still the missing production input, and how to evaluate retrieval quality in practice.">
-  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffe0a3'/%3E%3Cstop offset='100%25' stop-color='%2369d9d0'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='%23040506'/%3E%3Ccircle cx='32' cy='32' r='16' fill='url(%23g)'/%3E%3Ccircle cx='27' cy='26' r='5' fill='white' fill-opacity='.9'/%3E%3C/svg%3E">
+  <title>The Software Factory Is Here. Context Is Still Missing.</title>
+  <meta name="description" content="Every major engineering organisation is building a software factory. The variable that separates production-ready output from plausible failure is always the same: context.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23ffc247'/%3E%3Cstop offset='100%25' stop-color='%23ed2e20'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='18' fill='%23040506'/%3E%3Ccircle cx='32' cy='32' r='18' fill='none' stroke='url(%23g)' stroke-width='2.5'/%3E%3Ccircle cx='32' cy='32' r='6' fill='url(%23g)'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://cdn.prod.website-files.com" crossorigin>
   <link rel="stylesheet" href="./assets/site.css">
+  <style>
+    /* ─── Palette ─────────────────────────────────────── */
+    .factory-page {
+      --f-gold:   #ffc247;
+      --f-amber:  #ed2e20;
+      --f-teal:   #69d9d0;
+      --f-pink:   #d62687;
+      --f-dim:    rgba(255,255,255,0.32);
+      --f-line:   rgba(255,194,71,0.18);
+    }
+
+    /* ─── Shared section chrome ───────────────────────── */
+    .f-section {
+      position: relative;
+      padding: 6rem 0;
+    }
+    .f-section::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,194,71,0.28), transparent);
+    }
+
+    .f-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 0.9rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--f-gold);
+      opacity: 0.65;
+    }
+    .f-kicker::before {
+      content: "";
+      display: inline-block;
+      width: 1.6rem;
+      height: 1px;
+      background: currentColor;
+    }
+
+    .f-h2 {
+      margin: 0 0 0.5rem;
+      font-family: var(--display);
+      font-size: clamp(1.7rem, 3.2vw, 2.6rem);
+      font-weight: 500;
+      line-height: 1.08;
+      letter-spacing: -0.045em;
+      max-width: 28ch;
+    }
+
+    .f-lead {
+      max-width: 54ch;
+      color: var(--text-dim);
+      font-size: 1rem;
+      line-height: 1.72;
+      margin: 0.5rem 0 0;
+    }
+
+    /* ─── Scroll reveal ───────────────────────────────── */
+    .reveal {
+      opacity: 0;
+      transform: translateY(1.2rem);
+      transition: opacity 0.65s ease, transform 0.65s ease;
+    }
+    .reveal.is-visible { opacity: 1; transform: none; }
+    .reveal-d1 { transition-delay: 0.1s; }
+    .reveal-d2 { transition-delay: 0.2s; }
+    .reveal-d3 { transition-delay: 0.32s; }
+
+    /* ─── HERO ────────────────────────────────────────── */
+    .factory-hero {
+      position: relative;
+      min-height: 100svh;
+      display: flex;
+      align-items: flex-start;
+      padding: calc(var(--utility-offset) + 2.5rem) 0 2.75rem;
+      overflow: clip;
+    }
+
+    .factory-hero-bg {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
+    .factory-hero-bg::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 18% 28%, rgba(255,194,71,0.2) 0%, transparent 36%),
+        radial-gradient(ellipse at 82% 72%, rgba(237,46,32,0.14) 0%, transparent 30%),
+        radial-gradient(ellipse at 58% 8%,  rgba(105,217,208,0.08) 0%, transparent 24%);
+    }
+    .factory-hero-grid {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+      background-size: 5.5rem 5.5rem;
+      mask-image: linear-gradient(180deg, transparent 0%, black 16%, black 72%, transparent 100%);
+      animation: gridDrift 28s linear infinite;
+    }
+    @keyframes gridDrift {
+      from { background-position: 0 0; }
+      to   { background-position: 5.5rem 5.5rem; }
+    }
+
+    .factory-hero-inner {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      min-height: calc(100svh - var(--utility-offset) - 5.25rem);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 2.5rem;
+    }
+
+    .factory-hero-copy {
+      max-width: 40rem;
+      padding-top: 0.35rem;
+    }
+
+    .factory-hero-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 2.2rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--f-gold);
+      opacity: 0.7;
+    }
+    .factory-hero-eyebrow::before {
+      content: "";
+      display: inline-block;
+      width: 2.8rem;
+      height: 1px;
+      background: currentColor;
+    }
+
+    .factory-hero-title {
+      margin: 0 0 2.4rem;
+      font-family: var(--display);
+      font-size: clamp(2.15rem, 5.35vw, 4.7rem);
+      font-weight: 700;
+      line-height: 0.87;
+      letter-spacing: -0.055em;
+    }
+    .factory-hero-title .line-white  { display: block; color: var(--text); }
+    .factory-hero-title .line-gold   { display: block; color: var(--f-gold); }
+    .factory-hero-title .line-red    { display: block; color: rgba(237,46,32,0.88); }
+    .factory-hero-title .line-dim    { display: block; color: var(--f-dim); font-size: 0.58em; letter-spacing: -0.03em; margin-top: 0.15em; }
+
+    .factory-hero-lede {
+      max-width: 50ch;
+      font-size: clamp(1rem, 1.5vw, 1.18rem);
+      line-height: 1.68;
+      color: var(--text-dim);
+      margin: 0;
+    }
+
+    .factory-hero-lede-emphasis {
+      color: var(--f-gold);
+      font-weight: 500;
+    }
+
+    /* floating chips */
+    .hero-chip {
+      position: absolute;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.28);
+      white-space: nowrap;
+      pointer-events: none;
+      letter-spacing: 0.06em;
+    }
+    .hero-chip-1 { top: 16%; right: 14%; animation: chipFloat 9s ease-in-out infinite; }
+    .hero-chip-2 { top: 30%; right: 7%;  animation: chipFloat 11s ease-in-out infinite 1.5s; }
+    .hero-chip-3 { top: 43%; right: 19%; animation: chipFloat 8s ease-in-out infinite 3s; }
+    .hero-chip-4 { top: 55%; right: 10%; animation: chipFloat 10s ease-in-out infinite 0.8s; }
+    @keyframes chipFloat {
+      0%,100% { transform: translateY(0); opacity: 0.28; }
+      50%      { transform: translateY(-0.9rem); opacity: 0.55; }
+    }
+
+    /* ─── PRODUCTION GALLERY ─────────────────────────── */
+    .factory-gallery {
+      position: relative;
+      overflow: clip;
+    }
+
+    .factory-gallery::after {
+      content: "";
+      position: absolute;
+      inset: auto 0 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,194,71,0.18), transparent);
+      opacity: 0.8;
+    }
+
+    .factory-gallery-note {
+      color: rgba(255,255,255,0.42);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      white-space: nowrap;
+      display: block;
+      width: fit-content;
+      margin: 0 0 1.25rem auto;
+    }
+
+    .factory-gallery-track {
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: minmax(21rem, 29rem);
+      gap: 1rem;
+      overflow-x: auto;
+      padding: 0.5rem 0 1.25rem;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,194,71,0.52) rgba(255,255,255,0.04);
+    }
+
+    .factory-gallery-track::-webkit-scrollbar {
+      height: 10px;
+    }
+
+    .factory-gallery-track::-webkit-scrollbar-track {
+      background: rgba(255,255,255,0.035);
+      border-radius: 999px;
+    }
+
+    .factory-gallery-track::-webkit-scrollbar-thumb {
+      background: linear-gradient(90deg, rgba(255,194,71,0.86), rgba(237,46,32,0.8));
+      border-radius: 999px;
+    }
+
+    .factory-gallery-card {
+      position: relative;
+      min-height: 21rem;
+      padding: 1.35rem 1.35rem 1.4rem;
+      border-radius: 1.7rem;
+      border: 1px solid rgba(255,194,71,0.14);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.035), rgba(255,255,255,0.01)),
+        linear-gradient(135deg, rgba(255,194,71,0.05), rgba(214,38,135,0.035) 48%, rgba(105,217,208,0.045));
+      box-shadow: 0 26px 60px rgba(0,0,0,0.26);
+      scroll-snap-align: start;
+      display: grid;
+      align-content: space-between;
+      gap: 1.2rem;
+    }
+
+    .factory-gallery-card::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      background:
+        radial-gradient(circle at 18% 14%, rgba(255,255,255,0.05), transparent 22%),
+        radial-gradient(circle at 90% 10%, rgba(255,194,71,0.08), transparent 24%);
+      pointer-events: none;
+    }
+
+    .factory-gallery-top,
+    .factory-gallery-bottom {
+      position: relative;
+      z-index: 1;
+    }
+
+    .factory-gallery-top {
+      display: grid;
+      gap: 1.1rem;
+    }
+
+    .factory-gallery-meta {
+      display: flex;
+      align-items: start;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .factory-gallery-logo {
+      height: clamp(1.9rem, 2.4vw, 2.45rem);
+      width: auto;
+      max-width: 8rem;
+      filter: brightness(0) invert(1);
+      opacity: 0.96;
+    }
+
+    .factory-gallery-value {
+      text-align: right;
+    }
+
+    .factory-gallery-value strong {
+      display: block;
+      font-size: clamp(2.1rem, 4vw, 3.2rem);
+      line-height: 0.9;
+      letter-spacing: -0.06em;
+      color: var(--f-gold);
+    }
+
+    .factory-gallery-value span {
+      display: block;
+      margin-top: 0.35rem;
+      color: rgba(255,255,255,0.42);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .factory-gallery-body {
+      margin: 0;
+      color: rgba(236,236,239,0.82);
+      font-size: 1rem;
+      line-height: 1.7;
+      max-width: 34ch;
+    }
+
+    .factory-gallery-body strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .factory-gallery-bottom {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 1rem;
+      padding-top: 0.9rem;
+      border-top: 1px solid rgba(255,194,71,0.12);
+    }
+
+    .factory-gallery-tag {
+      color: rgba(255,194,71,0.7);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .factory-gallery-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: var(--f-gold);
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      opacity: 0.66;
+      transition: opacity 0.2s ease;
+    }
+
+    .factory-gallery-link:hover {
+      opacity: 1;
+    }
+
+    .factory-gallery-link::after {
+      content: "↗";
+    }
+
+    .factory-hero-gallery {
+      position: relative;
+      width: 100%;
+      margin-top: 0.25rem;
+    }
+
+    .factory-hero-gallery .factory-gallery-note {
+      margin-bottom: 0.8rem;
+      font-size: 0.63rem;
+      letter-spacing: 0.18em;
+    }
+
+    .factory-hero-gallery .factory-gallery-track {
+      grid-auto-columns: minmax(17rem, 21rem);
+      gap: 0.85rem;
+      padding: 0.2rem 0 0.9rem;
+    }
+
+    .factory-hero-gallery .factory-gallery-card {
+      min-height: 15rem;
+      padding: 1rem 1rem 1.05rem;
+      border-radius: 1.4rem;
+      gap: 0.95rem;
+      box-shadow: 0 18px 42px rgba(0,0,0,0.24);
+    }
+
+    .factory-hero-gallery .factory-gallery-top {
+      gap: 0.9rem;
+    }
+
+    .factory-hero-gallery .factory-gallery-logo {
+      height: clamp(1.45rem, 1.9vw, 1.85rem);
+      max-width: 7.1rem;
+    }
+
+    .factory-hero-gallery .factory-gallery-value strong {
+      font-size: clamp(1.85rem, 3vw, 2.75rem);
+    }
+
+    .factory-hero-gallery .factory-gallery-value span,
+    .factory-hero-gallery .factory-gallery-tag,
+    .factory-hero-gallery .factory-gallery-link {
+      font-size: 0.61rem;
+      letter-spacing: 0.13em;
+    }
+
+    .factory-hero-gallery .factory-gallery-body {
+      font-size: 0.9rem;
+      line-height: 1.58;
+      max-width: 29ch;
+    }
+
+    .factory-hero-gallery .factory-gallery-bottom {
+      padding-top: 0.75rem;
+    }
+
+    /* ─── SOFTWARE FACTORY PRIMER ────────────────────── */
+    .factory-primer {
+      position: relative;
+      padding: 5.2rem 0 5rem;
+      overflow: clip;
+    }
+    .factory-primer::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,194,71,0.28), transparent);
+    }
+    .factory-primer::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 14% 22%, rgba(255,194,71,0.1), transparent 26%),
+        radial-gradient(circle at 82% 70%, rgba(105,217,208,0.08), transparent 22%);
+      opacity: 0.9;
+    }
+
+    .factory-primer-inner {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 3.6rem;
+    }
+
+    .factory-primer-row {
+      display: grid;
+      grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+      gap: clamp(2rem, 5vw, 5rem);
+      align-items: center;
+    }
+
+    .factory-primer-row--reverse {
+      grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+    }
+
+    .factory-primer-row--reverse .factory-primer-copy {
+      order: 2;
+    }
+
+    .factory-primer-row--reverse .factory-primer-visual {
+      order: 1;
+    }
+
+    .factory-primer-copy .f-h2,
+    .factory-primer-copy .factory-primer-title {
+      max-width: 13ch;
+    }
+
+    .factory-primer-copy .f-lead {
+      max-width: 44ch;
+    }
+
+    .factory-primer-divider {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255,194,71,0.1), rgba(255,255,255,0.12), transparent 82%);
+    }
+
+    .factory-primer-visual {
+      position: relative;
+      min-height: 15rem;
+    }
+
+    .factory-flow {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      align-items: center;
+      min-height: 100%;
+      padding: 2rem 0;
+      position: relative;
+    }
+    .factory-flow::before,
+    .factory-flow::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .factory-flow::before {
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255,194,71,0.2), rgba(255,255,255,0.12), rgba(105,217,208,0.25));
+    }
+    .factory-flow::after {
+      height: 2px;
+      width: 24%;
+      right: auto;
+      background: linear-gradient(90deg, rgba(255,194,71,0), rgba(255,194,71,0.9), rgba(255,255,255,0.98), rgba(105,217,208,0));
+      filter: blur(0.6px);
+      animation: primerFlowPulse 4.8s cubic-bezier(0.35, 0, 0.2, 1) infinite;
+    }
+
+    .factory-flow-step {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      justify-items: center;
+      gap: 0.9rem;
+      text-align: center;
+    }
+
+    .factory-flow-step:nth-child(even) {
+      padding-top: 3.1rem;
+    }
+
+    .factory-flow-step:nth-child(odd) {
+      padding-bottom: 3.1rem;
+    }
+
+    .factory-flow-dot {
+      width: 0.82rem;
+      height: 0.82rem;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(255,194,71,0.92) 42%, rgba(255,194,71,0.16) 100%);
+      box-shadow: 0 0 22px rgba(255,194,71,0.4);
+      animation: primerDotPulse 3.8s ease-in-out infinite;
+    }
+
+    .factory-flow-step:nth-child(2) .factory-flow-dot {
+      animation-delay: -0.8s;
+    }
+
+    .factory-flow-step:nth-child(3) .factory-flow-dot {
+      animation-delay: -1.4s;
+    }
+
+    .factory-flow-step:nth-child(4) .factory-flow-dot {
+      animation-delay: -2s;
+    }
+
+    .factory-flow-label {
+      font-family: var(--mono);
+      font-size: 0.67rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.48);
+      white-space: nowrap;
+    }
+
+    .factory-flow-word {
+      font-family: var(--display);
+      font-size: clamp(1rem, 1.8vw, 1.45rem);
+      letter-spacing: -0.05em;
+      color: var(--text);
+    }
+
+    .factory-agent-system {
+      position: relative;
+      display: grid;
+      gap: 1.3rem;
+      align-content: center;
+      min-height: 100%;
+      padding: 1.2rem 0;
+    }
+
+    .factory-agent-core {
+      position: absolute;
+      inset: 50% auto auto 50%;
+      transform: translate(-50%, -50%);
+      font-family: var(--display);
+      font-size: clamp(2.1rem, 4.8vw, 4rem);
+      font-weight: 700;
+      line-height: 0.88;
+      letter-spacing: -0.07em;
+      color: rgba(255,255,255,0.08);
+      text-transform: lowercase;
+      pointer-events: none;
+      animation: primerCoreBreath 6.5s ease-in-out infinite;
+    }
+
+    .factory-agent-lane {
+      position: relative;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .factory-agent-trigger,
+    .factory-agent-result {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.52);
+      white-space: nowrap;
+    }
+
+    .factory-agent-result {
+      color: rgba(105,217,208,0.75);
+      text-align: right;
+    }
+
+    .factory-agent-line {
+      position: relative;
+      height: 1px;
+      background: linear-gradient(90deg, rgba(255,194,71,0.22), rgba(255,255,255,0.12), rgba(105,217,208,0.3));
+      overflow: hidden;
+    }
+
+    .factory-agent-line::before,
+    .factory-agent-line::after {
+      content: "";
+      position: absolute;
+      top: 50%;
+      border-radius: 999px;
+      transform: translateY(-50%);
+    }
+
+    .factory-agent-line::before {
+      left: -10%;
+      width: 24%;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(255,194,71,0), rgba(255,194,71,0.92), rgba(255,255,255,0.98), rgba(105,217,208,0));
+      filter: blur(0.5px);
+      animation: primerLaneSweep 4.4s linear infinite;
+    }
+
+    .factory-agent-line::after {
+      left: 42%;
+      width: 0.5rem;
+      height: 0.5rem;
+      background: radial-gradient(circle, rgba(255,255,255,0.95) 0%, rgba(105,217,208,0.85) 55%, rgba(105,217,208,0.08) 100%);
+      box-shadow: 0 0 18px rgba(105,217,208,0.45);
+      animation: primerLaneDot 3.6s ease-in-out infinite;
+    }
+
+    .factory-agent-lane:nth-child(2) .factory-agent-line::before {
+      animation-delay: -1.2s;
+    }
+
+    .factory-agent-lane:nth-child(3) .factory-agent-line::before {
+      animation-delay: -2.2s;
+    }
+
+    .factory-agent-lane:nth-child(2) .factory-agent-line::after {
+      animation-delay: -0.9s;
+    }
+
+    .factory-agent-lane:nth-child(3) .factory-agent-line::after {
+      animation-delay: -1.8s;
+    }
+
+    @keyframes primerFlowPulse {
+      0% {
+        transform: translate(0, -50%);
+        opacity: 0;
+      }
+
+      12% {
+        opacity: 1;
+      }
+
+      78% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(320%, -50%);
+        opacity: 0;
+      }
+    }
+
+    @keyframes primerDotPulse {
+      0%,
+      100% {
+        transform: scale(0.92);
+        opacity: 0.72;
+      }
+
+      50% {
+        transform: scale(1.14);
+        opacity: 1;
+      }
+    }
+
+    @keyframes primerLaneSweep {
+      0% {
+        transform: translate(-8%, -50%);
+        opacity: 0;
+      }
+
+      14% {
+        opacity: 1;
+      }
+
+      84% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(410%, -50%);
+        opacity: 0;
+      }
+    }
+
+    @keyframes primerLaneDot {
+      0%,
+      100% {
+        transform: translate(-0.5rem, -50%) scale(0.88);
+        opacity: 0.58;
+      }
+
+      50% {
+        transform: translate(0.5rem, -50%) scale(1.12);
+        opacity: 1;
+      }
+    }
+
+    @keyframes primerCoreBreath {
+      0%,
+      100% {
+        opacity: 0.06;
+        transform: translate(-50%, -50%) scale(0.98);
+      }
+
+      50% {
+        opacity: 0.12;
+        transform: translate(-50%, -50%) scale(1.03);
+      }
+    }
+
+    /* ─── PULL QUOTE ──────────────────────────────────── */
+    .factory-pullquote {
+      position: relative;
+      padding: 5.5rem 0;
+      text-align: center;
+    }
+    .factory-pullquote::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,194,71,0.28), transparent);
+    }
+    .factory-pullquote blockquote {
+      margin: 0 auto;
+      max-width: 46rem;
+      font-family: var(--display);
+      font-size: clamp(1.5rem, 3vw, 2.5rem);
+      font-weight: 500;
+      line-height: 1.22;
+      letter-spacing: -0.04em;
+    }
+    .factory-pullquote blockquote em {
+      font-style: normal;
+      color: var(--f-gold);
+    }
+
+    /* ─── CONTRAST ────────────────────────────────────── */
+    .factory-contrast-grid {
+      display: grid;
+      grid-template-columns: 1fr 3rem 1fr;
+      gap: 0;
+      margin-top: 4rem;
+      align-items: start;
+    }
+
+    .f-approach-label {
+      display: flex;
+      align-items: center;
+      gap: 0.7rem;
+      margin-bottom: 1.8rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .f-approach-label--chaos     { color: #ff6b6b; }
+    .f-approach-label--precision { color: var(--f-teal); }
+    .f-approach-dot {
+      width: 0.45rem;
+      height: 0.45rem;
+      border-radius: 50%;
+      background: currentColor;
+      box-shadow: 0 0 10px currentColor;
+      flex-shrink: 0;
+    }
+
+    .f-terminal {
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      line-height: 1.65;
+      color: rgba(255,255,255,0.7);
+      min-height: 15rem;
+    }
+    .f-terminal-cmd     { color: rgba(255,194,71,0.8); }
+    .f-terminal-noise   { color: rgba(255,255,255,0.22); display: block; }
+    .f-terminal-alert   { color: rgba(255,107,107,0.7); }
+    .f-terminal-teal    { color: rgba(105,217,208,0.8); }
+    .f-terminal-muted   { color: rgba(255,255,255,0.38); display: block; }
+
+    .f-ctx-bar { margin-top: 2.2rem; }
+    .f-ctx-bar-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.45rem;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+    .f-ctx-bar-track {
+      height: 2px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+    .f-ctx-bar-fill {
+      height: 100%;
+      border-radius: 999px;
+      width: 0%;
+      transition: width 2.4s cubic-bezier(0.22,0.1,0.36,1);
+    }
+    .f-ctx-bar-fill--chaos     { background: linear-gradient(90deg,#ff6b6b,#ff3a3a); }
+    .f-ctx-bar-fill--precision { background: linear-gradient(90deg,var(--f-teal),#4ecdc4); }
+    .f-ctx-bar-note {
+      margin-top: 0.5rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      color: var(--text-soft);
+    }
+
+    .f-outcome {
+      margin-top: 2rem;
+      padding-top: 1.6rem;
+      border-top: 1px solid rgba(255,255,255,0.06);
+    }
+    .f-outcome-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 0.45rem;
+    }
+    .f-outcome-label--chaos     { color: rgba(255,107,107,0.55); }
+    .f-outcome-label--precision { color: rgba(105,217,208,0.55); }
+    .f-outcome-text {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      line-height: 1.62;
+    }
+
+    .f-contrast-divider {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.8rem;
+      padding-top: 2.2rem;
+    }
+    .f-contrast-divider-line {
+      width: 1px;
+      flex: 1;
+      min-height: 6rem;
+      background: linear-gradient(180deg, transparent, rgba(255,255,255,0.15), transparent);
+    }
+    .f-contrast-vs {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+    }
+
+    /* ─── THREE LAYERS ────────────────────────────────── */
+    .factory-layers-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+
+    .factory-layers-svg {
+      max-width: 42rem;
+      width: 100%;
+    }
+
+    .f-layer { padding: 1.6rem 0; }
+    .f-layer + .f-layer { border-top: 1px solid rgba(255,255,255,0.07); }
+
+    .f-layer-name {
+      font-family: var(--display);
+      font-size: 1.08rem;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.35rem;
+    }
+    .f-layer-name--cb   { color: var(--f-gold); }
+    .f-layer-name--ops  { color: var(--f-teal); }
+    .f-layer-name--org  { color: var(--f-pink); }
+
+    .f-layer-desc {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      line-height: 1.62;
+      max-width: 44ch;
+    }
+
+    .f-layer-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.7rem;
+    }
+    .f-tag {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.06em;
+      padding: 0.18rem 0.55rem;
+      border-radius: 999px;
+      border: 1px solid currentColor;
+      opacity: 0.45;
+    }
+    .f-tag--cb  { color: var(--f-gold); }
+    .f-tag--ops { color: var(--f-teal); }
+    .f-tag--org { color: var(--f-pink); }
+
+    /* ─── WHY OVERLOOKED ──────────────────────────────── */
+    .f-overlooked-grid {
+      display: grid;
+      grid-template-columns: repeat(3,1fr);
+      gap: 3.5rem;
+      margin-top: 4rem;
+    }
+
+    .f-overlooked-num {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--f-gold);
+      opacity: 0.45;
+      margin-bottom: 0.9rem;
+    }
+
+    .f-overlooked-visual {
+      height: 3.5rem;
+      display: flex;
+      align-items: center;
+      margin-bottom: 1.1rem;
+    }
+
+    .f-overlooked-title {
+      font-family: var(--display);
+      font-size: 1.15rem;
+      font-weight: 500;
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+    }
+
+    .f-overlooked-desc {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      line-height: 1.66;
+    }
+
+    /* ─── CONTEXT POISONING ───────────────────────────── */
+    .factory-poison::before {
+      background: linear-gradient(90deg, transparent, rgba(237,46,32,0.35), transparent);
+    }
+
+    .factory-poison-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: center;
+    }
+
+    .poison-window {
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      line-height: 1.7;
+      position: relative;
+      overflow: hidden;
+      max-height: 20rem;
+    }
+    .poison-window::after {
+      content: "";
+      position: absolute;
+      bottom: 0; left: 0; right: 0;
+      height: 4rem;
+      background: linear-gradient(0deg, #050506, transparent);
+      pointer-events: none;
+    }
+    .poison-line        { display: block; color: rgba(255,255,255,0.2); }
+    .poison-line-signal { display: block; color: rgba(255,107,107,0.75); position: relative; }
+    .poison-line-signal::before {
+      content: "←";
+      position: absolute;
+      right: -1.5rem;
+      color: rgba(255,107,107,0.5);
+    }
+
+    .poison-caption {
+      margin-top: 1rem;
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      color: rgba(255,107,107,0.55);
+      line-height: 1.55;
+    }
+
+    /* ─── VERDICT ─────────────────────────────────────── */
+    .factory-verdict {
+      text-align: center;
+    }
+    .factory-verdict-title {
+      margin: 0 auto 1.4rem;
+      max-width: 24ch;
+      font-family: var(--display);
+      font-size: clamp(1.9rem, 4vw, 3.4rem);
+      font-weight: 500;
+      line-height: 1.12;
+      letter-spacing: -0.05em;
+    }
+    .factory-verdict-title em {
+      font-style: normal;
+      color: var(--f-gold);
+    }
+    .factory-verdict-body {
+      max-width: 56ch;
+      margin: 0 auto;
+      color: var(--text-dim);
+      font-size: 1rem;
+      line-height: 1.75;
+    }
+
+    /* ─── STRIPE ARCHITECTURE ─────────────────────────── */
+    .stripe-arch-section {
+      text-align: left;
+    }
+    .stripe-arch-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: start;
+      margin-top: 5rem;
+      padding-top: 4rem;
+      border-top: 1px solid var(--f-line);
+    }
+    .stripe-arch-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.65rem;
+      margin-bottom: 1rem;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--f-gold);
+      opacity: 0.65;
+    }
+    .stripe-arch-eyebrow::before {
+      content: "";
+      display: inline-block;
+      width: 1.6rem;
+      height: 1px;
+      background: currentColor;
+    }
+    .stripe-arch-title {
+      margin: 0 0 1.4rem;
+      font-family: var(--display);
+      font-size: clamp(1.5rem, 2.8vw, 2.2rem);
+      font-weight: 500;
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+    }
+    .stripe-arch-body {
+      color: var(--text-dim);
+      font-size: 0.97rem;
+      line-height: 1.74;
+      margin: 0 0 1.1rem;
+    }
+    .stripe-arch-sg {
+      margin-top: 1.8rem;
+      padding: 1.3rem 1.5rem;
+      border: 1px solid rgba(105,217,208,0.22);
+      border-left: 3px solid #69d9d0;
+      border-radius: 0 6px 6px 0;
+      background: rgba(105,217,208,0.04);
+    }
+    .stripe-arch-sg-label {
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: #69d9d0;
+      margin-bottom: 0.6rem;
+    }
+    .stripe-arch-sg p {
+      color: var(--text-dim);
+      font-size: 0.93rem;
+      line-height: 1.7;
+      margin: 0;
+    }
+
+    /* Pipeline diagram */
+    .arch-diagram {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+    }
+    .arch-phase-label {
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--f-dim);
+      margin-bottom: 0.75rem;
+    }
+    .arch-node {
+      position: relative;
+      padding: 0.85rem 1.1rem;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      background: rgba(255,255,255,0.03);
+      color: rgba(255,255,255,0.82);
+      line-height: 1.4;
+    }
+    .arch-node-sub {
+      display: block;
+      font-size: 0.65rem;
+      color: var(--f-dim);
+      margin-top: 0.2rem;
+    }
+    .arch-node-gold {
+      border-color: rgba(255,194,71,0.35);
+      background: rgba(255,194,71,0.05);
+      color: var(--f-gold);
+    }
+    .arch-node-teal {
+      border-color: rgba(105,217,208,0.35);
+      background: rgba(105,217,208,0.05);
+      color: #69d9d0;
+    }
+    .arch-arrow {
+      display: flex;
+      justify-content: center;
+      color: var(--f-dim);
+      font-size: 1rem;
+      line-height: 1;
+      padding: 0.3rem 0;
+    }
+    .arch-tools {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0.5rem;
+    }
+    .arch-tool {
+      padding: 0.65rem 0.5rem;
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 5px;
+      background: rgba(255,255,255,0.02);
+      text-align: center;
+      font-size: 0.68rem;
+      color: rgba(255,255,255,0.55);
+      line-height: 1.4;
+    }
+    .arch-tool-sg {
+      border-color: rgba(105,217,208,0.3);
+      background: rgba(105,217,208,0.06);
+      color: #69d9d0;
+    }
+    .arch-divider {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin: 1rem 0;
+      font-size: 0.62rem;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      color: var(--f-gold);
+    }
+    .arch-divider::before,
+    .arch-divider::after {
+      content: "";
+      flex: 1;
+      height: 1px;
+      background: rgba(255,194,71,0.25);
+    }
+
+    @media (max-width: 860px) {
+      .stripe-arch-inner {
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+      }
+    }
+
+    /* ─── CLOSE ───────────────────────────────────────── */
+    .factory-close {
+      padding: 8rem 0 9rem;
+    }
+    .factory-close::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(255,194,71,0.28), transparent);
+    }
+    .factory-close { position: relative; }
+
+    .factory-close-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--f-gold);
+      opacity: 0.6;
+      margin-bottom: 1.8rem;
+    }
+
+    .factory-close-title {
+      margin: 0 auto 0.6rem;
+      font-family: var(--display);
+      font-size: clamp(3rem, 7vw, 6.5rem);
+      font-weight: 700;
+      line-height: 0.9;
+      letter-spacing: -0.06em;
+    }
+    .factory-close-title .line-gold { display: block; color: var(--f-gold); }
+    .factory-close-title .line-white { display: block; color: var(--text); }
+    .factory-close-title .line-dim  { display: block; color: var(--f-dim); }
+
+    .factory-close-sub {
+      max-width: 46ch;
+      margin: 2rem 0 3rem;
+      color: var(--text-dim);
+      font-size: 1rem;
+      line-height: 1.72;
+    }
+
+    .factory-cta {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.7rem;
+      padding: 0.95rem 2.2rem;
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(255,194,71,0.15), rgba(237,46,32,0.08));
+      border: 1px solid rgba(255,194,71,0.32);
+      color: var(--f-gold);
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      transition: border-color 0.22s, background 0.22s;
+    }
+    .factory-cta:hover {
+      border-color: rgba(255,194,71,0.58);
+      background: linear-gradient(135deg, rgba(255,194,71,0.22), rgba(237,46,32,0.12));
+    }
+
+    /* ─── LOOPS VISUAL ───────────────────────────────── */
+    .factory-close-inner {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 4rem;
+      align-items: center;
+      text-align: left;
+    }
+    .loops-visual { max-width: 560px; }
+    .loops-visual svg { width: 100%; display: block; }
+    @media (max-width: 860px) {
+      .factory-close-inner { grid-template-columns: 1fr; gap: 3rem; }
+      .factory-close-inner .factory-close-title { font-size: clamp(2.4rem, 6vw, 3.8rem); }
+    }
+    .loop-context-dot {
+      animation: ctxPulse 2.8s ease-in-out infinite;
+      transform-box: fill-box;
+      transform-origin: center;
+    }
+    @keyframes ctxPulse {
+      0%, 100% { opacity: 0.85; transform: scale(1); }
+      50%       { opacity: 1;    transform: scale(1.45); }
+    }
+    .loops-legend {
+      display: flex;
+      justify-content: center;
+      gap: 2rem;
+      margin-top: 1.4rem;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+    .loops-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--f-dim);
+    }
+    .loops-dot {
+      display: inline-block;
+      width: 7px; height: 7px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .loops-dot-outer { background: rgba(255,194,71,0.8); }
+    .loops-dot-inner { background: rgba(255,255,255,0.6); }
+
+    /* ─── Responsive ──────────────────────────────────── */
+    @media (max-width: 860px) {
+      .factory-hero             { padding: calc(var(--utility-offset) + 1.6rem) 0 2rem; }
+      .factory-hero-inner       { min-height: auto; gap: 2rem; }
+      .factory-hero-copy        { max-width: 100%; padding-top: 0; }
+      .factory-primer           { padding: 4.2rem 0 4rem; }
+      .factory-primer-inner     { gap: 3rem; }
+      .factory-primer-row,
+      .factory-primer-row--reverse { grid-template-columns: 1fr; gap: 1.8rem; }
+      .factory-primer-row--reverse .factory-primer-copy,
+      .factory-primer-row--reverse .factory-primer-visual { order: initial; }
+      .factory-primer-copy .f-h2,
+      .factory-primer-copy .factory-primer-title { max-width: 12ch; }
+      .factory-primer-visual    { min-height: auto; }
+      .factory-flow             { gap: 1rem; }
+      .factory-flow::before,
+      .factory-flow::after      { left: 9%; right: 9%; }
+      .factory-flow-step:nth-child(even) { padding-top: 2.4rem; }
+      .factory-flow-step:nth-child(odd)  { padding-bottom: 2.4rem; }
+      .factory-flow-label       { max-width: 4.8rem; white-space: normal; line-height: 1.25; font-size: 0.58rem; letter-spacing: 0.14em; }
+      .factory-flow-word        { font-size: 0.94rem; }
+      .factory-agent-core       { inset: 50% auto auto 52%; font-size: clamp(1.7rem, 12vw, 2.8rem); }
+      .factory-agent-lane       { grid-template-columns: auto minmax(0, 1fr); gap: 0.8rem; }
+      .factory-agent-result     { grid-column: 2; text-align: left; margin-top: 0.45rem; }
+      .hero-chip                { display: none; }
+      .factory-contrast-grid    { grid-template-columns: 1fr; }
+      .f-contrast-divider       { display: none; }
+      .factory-layers-layout    { grid-template-columns: 1fr; }
+      .factory-layers-svg       { max-width: 26rem; margin: 0 auto; }
+      .f-overlooked-grid        { grid-template-columns: 1fr; gap: 2.2rem; }
+      .factory-poison-layout    { grid-template-columns: 1fr; gap: 2.8rem; }
+      .factory-gallery-note     { margin-left: 0; }
+      .factory-gallery-track    { grid-auto-columns: minmax(18.5rem, 86vw); }
+      .factory-hero-gallery .factory-gallery-track { grid-auto-columns: minmax(15.75rem, 78vw); }
+      .factory-hero-gallery .factory-gallery-card  { min-height: 13.6rem; }
+    }
+  </style>
 </head>
-<body>
+<body class="factory-page">
   <div class="page-progress" aria-hidden="true"></div>
 
   <div class="site-utility">
@@ -17,436 +1390,796 @@
       <a class="utility-link utility-link-brand" href="./index.html">
         <span class="brand-text">Context Engine</span>
       </a>
-      <a class="utility-link" href="./context-problem.html" aria-current="page">Software Factory</a>
+      <a class="utility-link" href="./context-problem2.html" aria-current="page">Software Factory</a>
       <a class="utility-link" href="./mcp-guide.html">Sourcegraph MCP</a>
     </nav>
   </div>
 
-  <aside class="chapter-rail" aria-label="Page chapters" data-chapter-gate="factory-signal">
-    <span class="chapter-kicker">Chapters</span>
-    <a class="chapter-link is-active" href="#factory-signal" data-chapter-target="factory-signal" aria-current="location">
-      <span class="chapter-dot" aria-hidden="true"></span>
-      <span class="chapter-copy">
-        <span class="chapter-index">01</span>
-        <span class="chapter-title">Market Signal</span>
-      </span>
-    </a>
-    <a class="chapter-link" href="#failure-mode" data-chapter-target="failure-mode">
-      <span class="chapter-dot" aria-hidden="true"></span>
-      <span class="chapter-copy">
-        <span class="chapter-index">02</span>
-        <span class="chapter-title">Failure Mode</span>
-      </span>
-    </a>
-    <a class="chapter-link" href="#evaluation" data-chapter-target="evaluation">
-      <span class="chapter-dot" aria-hidden="true"></span>
-      <span class="chapter-copy">
-        <span class="chapter-index">03</span>
-        <span class="chapter-title">Evaluation</span>
-      </span>
-    </a>
-  </aside>
+  <!-- ════════════════════════════════════════
+       HERO
+  ════════════════════════════════════════ -->
+  <section class="factory-hero">
+    <div class="factory-hero-bg" aria-hidden="true">
+      <div class="factory-hero-grid"></div>
+    </div>
 
-  <main>
-    <section class="page-hero context-hero">
-      <div class="container context-hero-layout">
-        <div class="context-hero-copy reveal">
-          <span class="eyebrow">Software Factory</span>
-          <h1 class="hero-statement">The factory is here. <span class="gradient-word">Context</span> is still the missing production input.</h1>
+    <!-- Floating production stats -->
+    <div aria-hidden="true">
+      <span class="hero-chip hero-chip-1">stripe/minions → 1,300 PRs/wk</span>
+      <span class="hero-chip hero-chip-2">spotify/honk → 1,500+ agent PRs</span>
+      <span class="hero-chip hero-chip-3">ramp/inspect → 30% of all PRs</span>
+      <span class="hero-chip hero-chip-4">uber/minion → 84% developer adoption</span>
+    </div>
+
+    <div class="container">
+      <div class="factory-hero-inner">
+        <div class="factory-hero-copy">
+          <h1 class="factory-hero-title reveal is-visible">
+            <span class="line-white">The factory</span>
+            <span class="line-white">is running.</span>
+            <span class="line-gold">Context</span>
+            <span class="line-red">is missing.</span>
+          </h1>
+          <p class="factory-hero-lede reveal reveal-d1 is-visible">Every major engineering organisation is deploying autonomous coding agents. The variable that separates production-ready output from plausible, undetectable failure is <span class="factory-hero-lede-emphasis">Context</span>.</p>
         </div>
 
-        <div class="context-hero-plane reveal" aria-hidden="true">
-          <div class="context-factory-scene">
-            <div class="factory-shell factory-shell-belt">
-              <div class="factory-shell-header">
-                <span class="factory-shell-title">Software Factory Flow</span>
-                <span class="factory-shell-status">Continuous flow interrupted</span>
+        <div class="factory-hero-gallery reveal reveal-d2 is-visible">
+          <div class="factory-gallery-track" aria-label="Software factory examples">
+            <article class="factory-gallery-card">
+              <div class="factory-gallery-top">
+                <div class="factory-gallery-meta">
+                  <img class="factory-gallery-logo" src="./assets/stripe.svg" alt="Stripe">
+                  <div class="factory-gallery-value">
+                    <strong>1,300+</strong>
+                    <span>PRs merged weekly</span>
+                  </div>
+                </div>
+                <p class="factory-gallery-body"><strong>Zero human intervention in the loop.</strong></p>
               </div>
-
-              <div class="factory-throughput">
-                <span class="factory-throughput-label">Flow rate</span>
-                <div class="factory-throughput-meter">
-                  <span class="factory-throughput-fill"></span>
-                </div>
+              <div class="factory-gallery-bottom">
+                <a class="factory-gallery-link" href="https://stripe.com/blog" target="_blank" rel="noopener">Stripe engineering</a>
               </div>
+            </article>
 
-              <div class="belt-caption-row">
-                <div class="belt-stage belt-stage-intake">
-                  <span class="belt-stage-kicker">Intake</span>
-                  <h3>Packages enter the line</h3>
-                  <p>Software flows cleanly while context is intact.</p>
+            <article class="factory-gallery-card">
+              <div class="factory-gallery-top">
+                <div class="factory-gallery-meta">
+                  <img class="factory-gallery-logo" src="./assets/spotify.svg" alt="Spotify">
+                  <div class="factory-gallery-value">
+                    <strong>1,500+</strong>
+                    <span>Agent PRs shipped</span>
+                  </div>
                 </div>
-
-                <div class="belt-stage belt-stage-breakage">
-                  <span class="belt-stage-kicker">Downstream</span>
-                  <h3>Output goes dark after the jam</h3>
-                  <p>Consumers stop receiving clean output.</p>
-                </div>
+                <p class="factory-gallery-body"><strong>Large-scale migrations, real production use.</strong></p>
               </div>
-
-              <div class="belt-track">
-                <div class="belt-lane belt-lane-top"></div>
-                <div class="belt-rollers" aria-hidden="true">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-                <div class="belt-packages" aria-hidden="true">
-                  <span class="belt-package package-good package-good-a">build</span>
-                  <span class="belt-package package-good package-good-b">patch</span>
-                  <span class="belt-package package-good package-good-c">tests</span>
-                  <span class="belt-package package-bad">guess.ts</span>
-                  <span class="belt-package package-stuck package-stuck-a">queue</span>
-                  <span class="belt-package package-stuck package-stuck-b">queue</span>
-                  <span class="belt-package package-stuck package-stuck-c">queue</span>
-                </div>
-                <div class="belt-gate" aria-hidden="true"></div>
-                <div class="belt-downstream-glow" aria-hidden="true"></div>
+              <div class="factory-gallery-bottom">
+                <a class="factory-gallery-link" href="https://engineering.atspotify.com" target="_blank" rel="noopener">Spotify engineering</a>
               </div>
+            </article>
 
-              <div class="belt-jam-cluster" aria-hidden="true">
-                <span class="jam-node jam-node-core"></span>
-                <span class="jam-node jam-node-a"></span>
-                <span class="jam-node jam-node-b"></span>
-              </div>
-
-              <div class="belt-stage belt-stage-jam">
-                <span class="belt-stage-kicker">Failure point</span>
-                <h3>Hallucinated edit jams the belt</h3>
-                <p>The wrong change reaches the gate and the queue locks behind it.</p>
-              </div>
-
-              <div class="belt-remediation-row">
-                <div class="belt-stage belt-stage-remediation">
-                  <span class="belt-stage-kicker">Remediation</span>
-                  <h3>Reviews, tests, and rollback replace throughput</h3>
+            <article class="factory-gallery-card">
+              <div class="factory-gallery-top">
+                <div class="factory-gallery-meta">
+                  <img class="factory-gallery-logo" src="./assets/ramp.svg" alt="Ramp">
+                  <div class="factory-gallery-value">
+                    <strong>30%</strong>
+                    <span>Of merged PRs</span>
+                  </div>
                 </div>
+                <p class="factory-gallery-body"><strong>Background agent in sandboxed cloud VMs with full access to the development environment.</strong></p>
+              </div>
+              <div class="factory-gallery-bottom">
+                <a class="factory-gallery-link" href="https://engineering.ramp.com" target="_blank" rel="noopener">Ramp engineering</a>
+              </div>
+            </article>
 
-                <div class="belt-blockers">
-                  <div class="belt-blocker blocker-context">Missing context</div>
-                  <div class="belt-blocker blocker-tests">Failed tests</div>
-                  <div class="belt-blocker blocker-review">Review queue</div>
-                  <div class="belt-blocker blocker-rollback">Rollback</div>
+            <article class="factory-gallery-card">
+              <div class="factory-gallery-top">
+                <div class="factory-gallery-meta">
+                  <img class="factory-gallery-logo" src="./assets/uber.svg" alt="Uber">
+                  <div class="factory-gallery-value">
+                    <strong>84%</strong>
+                    <span>Developer adoption</span>
+                  </div>
                 </div>
+                <p class="factory-gallery-body"><strong>Background agent with monorepo access and full company wise context.</strong></p>
+              </div>
+              <div class="factory-gallery-bottom">
+                <a class="factory-gallery-link" href="https://www.uber.com/blog/engineering" target="_blank" rel="noopener">Uber engineering</a>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       SOFTWARE FACTORY PRIMER
+  ════════════════════════════════════════ -->
+  <section class="factory-primer">
+    <div class="container">
+      <div class="factory-primer-inner">
+        <div class="factory-primer-row">
+          <div class="factory-primer-copy reveal">
+            <div class="f-kicker">Software factory</div>
+            <h2 class="f-h2">A software factory is a production system for software delivery.</h2>
+            <p class="f-lead">Humans define the work requirements, goals, acceptance criteria and review output. Agents handle the implementation work in between: writing code, running tests, resolving failures, and keeping the software delivery pipeline moving.</p>
+          </div>
+
+          <div class="factory-primer-visual reveal reveal-d1" aria-hidden="true">
+            <div class="factory-flow">
+              <div class="factory-flow-step">
+                <span class="factory-flow-label">Request</span>
+                <span class="factory-flow-dot"></span>
+                <span class="factory-flow-word">Define</span>
+              </div>
+              <div class="factory-flow-step">
+                <span class="factory-flow-label">Agent</span>
+                <span class="factory-flow-dot"></span>
+                <span class="factory-flow-word">Run</span>
+              </div>
+              <div class="factory-flow-step">
+                <span class="factory-flow-label">Checks</span>
+                <span class="factory-flow-dot"></span>
+                <span class="factory-flow-word">Verify</span>
+              </div>
+              <div class="factory-flow-step">
+                <span class="factory-flow-label">Pull request</span>
+                <span class="factory-flow-dot"></span>
+                <span class="factory-flow-word">Ship</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="factory-primer-divider" aria-hidden="true"></div>
+
+        <div class="factory-primer-row factory-primer-row--reverse">
+          <div class="factory-primer-copy reveal reveal-d1">
+            <div class="f-kicker">Background agents</div>
+            <h3 class="f-h2 factory-primer-title">They are the workers on the line.</h3>
+            <p class="f-lead">A ticket, schedule, or system signal starts the job. Multiple background agents work away from the keyboard and return code ready for review.</p>
+          </div>
+
+          <div class="factory-primer-visual reveal reveal-d2" aria-hidden="true">
+            <div class="factory-agent-system">
+              <div class="factory-agent-core">background<br>agents</div>
+              <div class="factory-agent-lane">
+                <span class="factory-agent-trigger">Ticket</span>
+                <span class="factory-agent-line"></span>
+                <span class="factory-agent-result">PR ready</span>
+              </div>
+              <div class="factory-agent-lane">
+                <span class="factory-agent-trigger">Schedule</span>
+                <span class="factory-agent-line"></span>
+                <span class="factory-agent-result">Tests run</span>
+              </div>
+              <div class="factory-agent-lane">
+                <span class="factory-agent-trigger">Signal</span>
+                <span class="factory-agent-line"></span>
+                <span class="factory-agent-result">Merge queue</span>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="section section-compact" id="factory-signal">
-      <div class="container">
-        <div class="section-header reveal">
-          <span class="eyebrow">Market Signal</span>
-        </div>
+  <!-- ════════════════════════════════════════
+       PULL QUOTE
+  ════════════════════════════════════════ -->
+  <div class="factory-pullquote">
+    <div class="container">
+      <blockquote class="reveal">
+        "The thing that determines whether a background agent produces reliable, mergeable, production-quality code is <em>context</em>."
+      </blockquote>
+    </div>
+  </div>
 
-        <div class="editorial-copy reveal">
-          <h2 class="hero-statement hero-statement-wide">Everyone is racing to build a software factory. Not buying one. Building one</h2>
-          <p class="lede">
-            A factory is infrastructure. It’s process. It’s a system that runs reliably at scale. And increasingly, autonomous coding agents that generate code, review, test, and merge pull requests around the clock.
-          </p>
-        </div>
+  <!-- ════════════════════════════════════════
+       THE CONTRAST
+  ════════════════════════════════════════ -->
+  <section class="f-section">
+    <div class="container">
+      <div class="reveal">
+        <div class="f-kicker">The core problem</div>
+        <h2 class="f-h2">Two approaches to retrieval</h2>
+        <p class="f-lead">How an agent assembles context before writing code determines everything that follows.</p>
       </div>
-    </section>
 
-    <section class="section section-compact section-market-grid">
-      <div class="container">
-        <div class="market-proof reveal">
-          <article class="market-proof-item">
-            <div class="market-proof-brand">
-              <img class="market-proof-logo market-proof-logo-stripe" src="assets/stripe.svg" alt="Stripe" />
-            </div>
-            <div class="market-proof-copy">
-              <p><a href="https://stripe.dev/blog/minions-stripes-one-shot-end-to-end-coding-agents" target="_blank" rel="noreferrer">Minions</a> merges over 1,300 AI generated pull requests every week. Background coding agents go from a Slack message to a CI-passing PR with no human in the loop. Engineers tag the Minion bot in Slack and walk away. The agent runs in an isolated pre-warmed devbox, executes the task, and opens a PR.</p>
-            </div>
-          </article>
-          <article class="market-proof-item">
-            <div class="market-proof-brand">
-              <img class="market-proof-logo market-proof-logo-spotify" src="assets/spotify.svg" alt="Spotify" />
-            </div>
-            <div class="market-proof-copy">
-              <p><a href="https://engineering.atspotify.com/2025/11/spotifys-background-coding-agent-part-1" target="_blank" rel="noreferrer">Honk</a> has shipped more than 1,500 agent-authored PRs into production. Spotify adapted its fleet management system into a platform for running a background coding agent that performs large-scale code migrations from natural language instructions.</p>
-            </div>
-          </article>
-          <article class="market-proof-item">
-            <div class="market-proof-brand">
-              <img class="market-proof-logo market-proof-logo-ramp" src="assets/ramp.svg" alt="Ramp" />
-            </div>
-            <div class="market-proof-copy">
-              <p><a href="https://builders.ramp.com/post/why-we-built-our-background-agent" target="_blank" rel="noreferrer">Inspect</a> now authors roughly 30% of Ramp’s merged pull requests. It runs inside sandboxed cloud VMs with full access to the real development environment, from Postgres and Redis to Temporal, LaunchDarkly, and Buildkite.</p>
-            </div>
-          </article>
-          <article class="market-proof-item">
-            <div class="market-proof-brand">
-              <img class="market-proof-logo market-proof-logo-uber" src="assets/uber.svg" alt="Uber" />
-            </div>
-            <div class="market-proof-copy">
-              <p><a href="https://newsletter.pragmaticengineer.com/p/how-uber-uses-ai-for-development" target="_blank" rel="noreferrer">Minion</a> has 84% of Uber developers using agentic tooling monthly. Uber also built an internal MCP gateway that exposes source code, Jira, Slack, and engineering documentation as a unified context surface for agents.</p>
-            </div>
-          </article>
-        </div>
-      </div>
-    </section>
+      <div class="factory-contrast-grid">
 
-    <section class="section" id="failure-mode">
-      <div class="container">
-        <div class="section-header reveal">
-          <span class="eyebrow">SOFTWARE FACTORY CAN'T FUNCTION WITHOUT RIGHT CONTEXT</span>
-          <h2 class="hero-statement hero-statement-wide">Every serious agent team keeps rediscovering the same failure mode.</h2>
-        </div>
-
-        <div class="failure-canvas reveal" aria-label="Failure mode visual">
-          <div class="failure-canvas-grid" aria-hidden="true"></div>
-          <div class="failure-canvas-core">
-            <span class="failure-canvas-kicker">Missing context</span>
-            <strong>Factory output breaks here</strong>
-            <p>The recurring issue is retrieval quality, not just model capability.</p>
+        <!-- CHAOS: Grep -->
+        <div class="reveal reveal-d1">
+          <div class="f-approach-label f-approach-label--chaos">
+            <span class="f-approach-dot"></span>
+            Filesystem grep
           </div>
 
-          <span class="failure-link failure-link-a" aria-hidden="true"></span>
-          <span class="failure-link failure-link-b" aria-hidden="true"></span>
-          <span class="failure-link failure-link-c" aria-hidden="true"></span>
-          <span class="failure-link failure-link-d" aria-hidden="true"></span>
+          <div class="f-terminal" id="chaos-terminal">
+            <span class="f-terminal-cmd">$ grep -r "AuthService" ./src</span><br>
+            <span class="f-terminal-noise" id="g1"></span>
+            <span class="f-terminal-noise" id="g2"></span>
+            <span class="f-terminal-noise" id="g3"></span>
+            <span class="f-terminal-noise" id="g4"></span>
+            <span class="f-terminal-noise" id="g5"></span>
+            <span class="f-terminal-alert" id="g6">... 847 matches across 234 files</span><br>
+            <span class="f-terminal-cmd" style="opacity:0.45;">$ grep -r "auth_token" ./middleware</span><br>
+            <span class="f-terminal-noise" id="g7"></span>
+            <span class="f-terminal-noise" id="g8"></span>
+            <span class="f-terminal-noise" style="color:rgba(255,107,107,0.45);">... 312 more matches</span>
+          </div>
 
-          <article class="failure-note failure-note-a">
-            <span class="failure-note-index">01</span>
-            <h3>Wrong source of truth</h3>
-            <p>The agent misses the real implementation.</p>
-          </article>
+          <div class="f-ctx-bar">
+            <div class="f-ctx-bar-header">
+              <span>Context window</span>
+              <span id="chaos-pct">0%</span>
+            </div>
+            <div class="f-ctx-bar-track">
+              <div class="f-ctx-bar-fill f-ctx-bar-fill--chaos" id="chaos-fill"></div>
+            </div>
+            <div class="f-ctx-bar-note" style="color:rgba(255,107,107,0.55);">Saturated. Agent forgets the original task mid-thread.</div>
+          </div>
 
-          <article class="failure-note failure-note-b">
-            <span class="failure-note-index">02</span>
-            <h3>Human context ferry</h3>
-            <p>People start hand-carrying grep output and files.</p>
-          </article>
-
-          <article class="failure-note failure-note-c">
-            <span class="failure-note-index">03</span>
-            <h3>Quiet failure</h3>
-            <p>Answers still sound plausible while impact is wrong.</p>
-          </article>
-
-          <article class="failure-note failure-note-d">
-            <span class="failure-note-index">04</span>
-            <h3>Benchmarks miss it</h3>
-            <p>Small tasks hide the retrieval problem.</p>
-            <p class="failure-note-meta"><a href="https://medium.com/@steph.jarmak/i-couldnt-find-a-good-enough-benchmark-for-large-scale-software-development-so-i-built-one-d2cc5946e963" target="_blank" rel="noreferrer">Why we wrote our own benchmark</a></p>
-          </article>
+          <div class="f-outcome">
+            <div class="f-outcome-label f-outcome-label--chaos">Result</div>
+            <div class="f-outcome-text">Code that <em>looks</em> correct. Silently diverges from team conventions, cross-repo contracts, and live system state. Passes review. Fails later.</div>
+          </div>
         </div>
+
+        <!-- DIVIDER -->
+        <div class="f-contrast-divider" aria-hidden="true">
+          <div class="f-contrast-divider-line"></div>
+          <div class="f-contrast-vs">vs</div>
+          <div class="f-contrast-divider-line"></div>
+        </div>
+
+        <!-- PRECISION: MCP -->
+        <div class="reveal reveal-d2">
+          <div class="f-approach-label f-approach-label--precision">
+            <span class="f-approach-dot"></span>
+            Sourcegraph MCP
+          </div>
+
+          <div class="f-terminal">
+            <span class="f-terminal-teal">→ search_code("interface AuthService")</span><br>
+            <span class="f-terminal-muted">  Semantic search across 140 repos…</span>
+            <span class="f-terminal-teal">✓ auth/interfaces/AuthService.ts:12</span><br>
+            <span class="f-terminal-muted">  interface AuthService &#123;</span>
+            <span class="f-terminal-muted">    authenticate(token: string): Promise&lt;User&gt;</span>
+            <span class="f-terminal-muted">    refresh(session: Session): Promise&lt;Token&gt;</span>
+            <span class="f-terminal-muted">  &#125;</span>
+            <span class="f-terminal-teal" style="opacity:0.65;">→ find_references("AuthService") → 12 usages</span><br>
+            <span class="f-terminal-teal" style="opacity:0.55;">→ get_file_history("auth/interfaces/AuthService.ts")</span><br>
+            <span class="f-terminal-teal" style="opacity:0.45;">→ lookup_owner("auth/interfaces/") → @auth-team</span>
+          </div>
+
+          <div class="f-ctx-bar">
+            <div class="f-ctx-bar-header">
+              <span>Context window</span>
+              <span id="precision-pct">0%</span>
+            </div>
+            <div class="f-ctx-bar-track">
+              <div class="f-ctx-bar-fill f-ctx-bar-fill--precision" id="precision-fill"></div>
+            </div>
+            <div class="f-ctx-bar-note" style="color:rgba(105,217,208,0.55);">Precise. Ranked. Relevant. Agent retains full task focus.</div>
+          </div>
+
+          <div class="f-outcome">
+            <div class="f-outcome-label f-outcome-label--precision">Result</div>
+            <div class="f-outcome-text">Code that matches the exact interface contract, respects cross-repo dependencies, and is mergeable without review surprises. Every time.</div>
+          </div>
+        </div>
+
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="section">
-      <div class="container">
-        <div class="section-header reveal">
-          <span class="eyebrow">A good software factory pattern</span>
-          <h2 class="hero-statement hero-statement-wide">Context design should be a foundational consideration in how the software factory operates</h2>
+  <!-- ════════════════════════════════════════
+       THREE CONTEXT LAYERS
+  ════════════════════════════════════════ -->
+  <section class="f-section">
+    <div class="container">
+      <div class="factory-layers-layout">
+
+        <!-- Orbital SVG -->
+        <div class="reveal">
+          <svg class="factory-layers-svg" viewBox="0 0 440 440" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <defs>
+              <radialGradient id="agentCore" cx="50%" cy="50%" r="50%">
+                <stop offset="0%"   stop-color="#ffc247" stop-opacity="1"/>
+                <stop offset="55%"  stop-color="#ffc247" stop-opacity="0.35"/>
+                <stop offset="100%" stop-color="#ffc247" stop-opacity="0"/>
+              </radialGradient>
+              <filter id="glow">
+                <feGaussianBlur stdDeviation="3" result="blur"/>
+                <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+              </filter>
+            </defs>
+
+            <!-- Subtle bg circle -->
+            <circle cx="220" cy="220" r="210" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/>
+
+            <!-- Outer ring — Organisational (pink) -->
+            <ellipse cx="220" cy="220" rx="198" ry="96" fill="none"
+              stroke="#d62687" stroke-width="1" stroke-opacity="0.3" stroke-dasharray="5 7"
+              transform="rotate(-14, 220, 220)"/>
+            <!-- animated particle -->
+            <circle r="3.5" fill="#d62687" opacity="0.75" filter="url(#glow)">
+              <animateMotion dur="24s" repeatCount="indefinite">
+                <mpath href="#o-path"/>
+              </animateMotion>
+            </circle>
+            <path id="o-path" d="M220 220 m-198 0 a198 96 0 1 1 396 0 a198 96 0 1 1 -396 0"
+              fill="none" transform="rotate(-14,220,220)"/>
+
+            <!-- Middle ring — Operational (teal) -->
+            <ellipse cx="220" cy="220" rx="138" ry="66" fill="none"
+              stroke="#69d9d0" stroke-width="1.5" stroke-opacity="0.42" stroke-dasharray="7 5"
+              transform="rotate(-14, 220, 220)"/>
+            <circle r="4" fill="#69d9d0" opacity="0.8" filter="url(#glow)">
+              <animateMotion dur="13s" repeatCount="indefinite">
+                <mpath href="#m-path"/>
+              </animateMotion>
+            </circle>
+            <path id="m-path" d="M220 220 m-138 0 a138 66 0 1 1 276 0 a138 66 0 1 1 -276 0"
+              fill="none" transform="rotate(-14,220,220)"/>
+
+            <!-- Inner ring — Codebase (gold) -->
+            <ellipse cx="220" cy="220" rx="78" ry="38" fill="none"
+              stroke="#ffc247" stroke-width="2" stroke-opacity="0.75"
+              transform="rotate(-14, 220, 220)"/>
+            <circle r="4.5" fill="#ffc247" opacity="0.95" filter="url(#glow)">
+              <animateMotion dur="6s" repeatCount="indefinite">
+                <mpath href="#i-path"/>
+              </animateMotion>
+            </circle>
+            <path id="i-path" d="M220 220 m-78 0 a78 38 0 1 1 156 0 a78 38 0 1 1 -156 0"
+              fill="none" transform="rotate(-14,220,220)"/>
+
+            <!-- Agent core -->
+            <circle cx="220" cy="220" r="32" fill="url(#agentCore)" opacity="0.85"/>
+            <circle cx="220" cy="220" r="16" fill="#050506"/>
+            <circle cx="220" cy="220" r="5.5" fill="#ffc247"/>
+            <text x="220" y="244" text-anchor="middle"
+              font-family="Poly Sans Mono, monospace" font-size="8.5"
+              fill="rgba(255,194,71,0.55)" letter-spacing="0.18em">AGENT</text>
+
+            <!-- Ring labels -->
+            <text x="142" y="195" text-anchor="middle"
+              font-family="Poly Sans Mono, monospace" font-size="9" fill="#ffc247" fill-opacity="0.8" letter-spacing="0.09em">CODEBASE</text>
+
+            <text x="98" y="178" text-anchor="middle"
+              font-family="Poly Sans Mono, monospace" font-size="8.5" fill="#69d9d0" fill-opacity="0.72" letter-spacing="0.07em">OPERATIONAL</text>
+
+            <text x="46" y="200" text-anchor="middle"
+              font-family="Poly Sans Mono, monospace" font-size="8" fill="#d62687" fill-opacity="0.68" letter-spacing="0.06em">ORGANISATIONAL</text>
+          </svg>
         </div>
 
-        <div class="prehydration-flow reveal" aria-label="Agents receive pre-hydrated context before execution">
-          <div class="ph-sources">
-            <div class="ph-source">
-              <span class="ph-source-dot"></span>
-              <div class="ph-source-text">
-                <strong>Organisational Context</strong>
-                <span>PRD - Slack threads - Documentation - Data which aligns to the team</span>
+        <!-- Layer descriptions -->
+        <div>
+          <div class="f-kicker reveal">Three layers of context</div>
+          <h2 class="f-h2 reveal">The architecture every factory needs</h2>
+          <p class="f-lead reveal">Without all three, the agent operates on assumptions. Each layer is non-negotiable. Together, they make output that is genuinely production-safe.</p>
+
+          <div style="margin-top: 2.8rem;">
+
+            <div class="f-layer reveal">
+              <div class="f-layer-name f-layer-name--cb">Codebase Context</div>
+              <div class="f-layer-desc">Symbol definitions, cross-repository dependencies, reference navigation, semantic diffs. Not file access — code intelligence. Without it, the agent doesn't know what already exists or how it's connected.</div>
+              <div class="f-layer-tags">
+                <span class="f-tag f-tag--cb">Symbol search</span>
+                <span class="f-tag f-tag--cb">Cross-repo refs</span>
+                <span class="f-tag f-tag--cb">Semantic diffs</span>
+                <span class="f-tag f-tag--cb">Ownership</span>
               </div>
             </div>
-            <div class="ph-source">
-              <span class="ph-source-dot"></span>
-              <div class="ph-source-text">
-                <strong>Operational Context</strong>
-                <span>Errors - screenshots - feature flags - Observability - deploy state - debug the live system</span>
+
+            <div class="f-layer reveal reveal-d1">
+              <div class="f-layer-name f-layer-name--ops">Operational Context</div>
+              <div class="f-layer-desc">Real-time system state: error traces, feature flags, deploy changes, observability data. Without it, the agent writes code that's theoretically correct but breaks against the live system.</div>
+              <div class="f-layer-tags">
+                <span class="f-tag f-tag--ops">Sentry traces</span>
+                <span class="f-tag f-tag--ops">LaunchDarkly</span>
+                <span class="f-tag f-tag--ops">Deploy state</span>
+                <span class="f-tag f-tag--ops">Metrics</span>
               </div>
             </div>
-            <div class="ph-source">
-              <span class="ph-source-dot"></span>
-              <div class="ph-source-text">
-                <strong>Codebase Context</strong>
-                <span>definitions - references - diff - deep seearch - code - fetched from Sourcegraph</span>
+
+            <div class="f-layer reveal reveal-d2">
+              <div class="f-layer-name f-layer-name--org">Organisational Context</div>
+              <div class="f-layer-desc">Team knowledge embedded in Jira tickets, Slack conversations, architectural decision records, and CODEOWNERS files. Without it, the agent ignores conventions your team has spent years establishing.</div>
+              <div class="f-layer-tags">
+                <span class="f-tag f-tag--org">Jira tickets</span>
+                <span class="f-tag f-tag--org">ADRs</span>
+                <span class="f-tag f-tag--org">CODEOWNERS</span>
+                <span class="f-tag f-tag--org">Slack threads</span>
               </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       STRIPE ARCHITECTURE
+  ════════════════════════════════════════ -->
+  <section class="f-section stripe-arch-section">
+    <div class="container">
+      <div class="stripe-arch-inner">
+
+        <!-- Text -->
+        <div class="reveal">
+          <div class="stripe-arch-eyebrow">Stripe's Minion · Reference architecture</div>
+          <h3 class="stripe-arch-title">Context solved before the loop starts</h3>
+          <p class="stripe-arch-body">Stripe didn't try to solve context inside the agent loop. They solved it before the loop starts.</p>
+          <p class="stripe-arch-body">Toolshed, their central MCP server, hosts 500 tools covering internal systems, SaaS platforms, docs, tickets, and code intelligence via Sourcegraph. Before any LLM call fires, a deterministic orchestrator scans the task for links and references, pre-fetches relevant context, and curates a focused subset of roughly 15 tools. Tickets fetched. Docs retrieved. Code searched.</p>
+          <p class="stripe-arch-body">By the time the model wakes up, the context window is hydrated and the toolset is scoped. It's not exploring. It's not deciding what to call. It's just doing the work.</p>
+          <p class="stripe-arch-body">Front-load the intelligence. Assemble context deterministically. Hand off to the model to execute.</p>
+          <div class="stripe-arch-sg">
+            <div class="stripe-arch-sg-label">Sourcegraph's role in that architecture</div>
+            <p>Semantic code intelligence not available through file access alone — which services call this method, where an interface is implemented across repositories, whether a pattern has been deprecated. Grep returns strings. Sourcegraph returns semantically ranked results with cross-repo scope, using the same code intelligence graph that powers the developer-facing search product.</p>
+          </div>
+        </div>
+
+        <!-- Diagram -->
+        <div class="arch-diagram reveal reveal-d1">
+          <div class="arch-phase-label">Before the loop</div>
+
+          <div class="arch-node">
+            Task arrives
+            <span class="arch-node-sub">Jira link · Slack thread · issue description</span>
+          </div>
+
+          <div class="arch-arrow">↓</div>
+
+          <div class="arch-node arch-node-gold">
+            Deterministic orchestrator
+            <span class="arch-node-sub">Toolshed MCP · 500 tools total</span>
+          </div>
+
+          <div class="arch-arrow">↓</div>
+
+          <div class="arch-tools">
+            <div class="arch-tool">
+              Jira<br>tickets
+            </div>
+            <div class="arch-tool">
+              Docs &amp;<br>runbooks
+            </div>
+            <div class="arch-tool arch-tool-sg">
+              Sourcegraph<br>MCP
             </div>
           </div>
 
-          <div class="ph-connector ph-connector-gather" aria-hidden="true">
-            <svg class="ph-connector-svg" viewBox="0 0 56 320" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-              <line class="ph-svg-line" x1="2" y1="52" x2="54" y2="160"/>
-              <line class="ph-svg-line" x1="2" y1="160" x2="54" y2="160"/>
-              <line class="ph-svg-line" x1="2" y1="268" x2="54" y2="160"/>
+          <div class="arch-divider">Context hydrated · ~15 tools in scope</div>
+
+          <div class="arch-phase-label">Inside the loop</div>
+
+          <div class="arch-node">
+            Model executes
+            <span class="arch-node-sub">Not exploring · not deciding what to call</span>
+          </div>
+
+          <div class="arch-arrow">↓</div>
+
+          <div class="arch-node arch-node-teal">
+            PR merged
+            <span class="arch-node-sub">1,300+ / week · zero human intervention</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       WHY CONTEXT IS OVERLOOKED
+  ════════════════════════════════════════ -->
+  <section class="f-section">
+    <div class="container">
+      <div class="reveal">
+        <div class="f-kicker">The blindspot</div>
+        <h2 class="f-h2">Why context keeps getting skipped</h2>
+      </div>
+
+      <div class="f-overlooked-grid">
+
+        <div class="f-overlooked-item reveal">
+          <div class="f-overlooked-visual">
+            <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="26" cy="26" r="22" stroke="rgba(255,194,71,0.18)" stroke-width="1.5"/>
+              <path d="M18 26l6 6 10-12" stroke="rgba(255,194,71,0.55)" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M38 10 Q44 8 42 14" stroke="rgba(255,194,71,0.2)" stroke-width="1"
+                fill="none" stroke-linecap="round"/>
+              <text x="38" y="10" font-size="10" fill="rgba(255,194,71,0.2)">✓</text>
             </svg>
           </div>
+          <div class="f-overlooked-num">01</div>
+          <div class="f-overlooked-title">Success is invisible</div>
+          <div class="f-overlooked-desc">When retrieval works perfectly, reviewers see the PR — not the retrieval mechanism behind it. Precise context gets no credit, so it's never prioritised in evaluations or infrastructure investment.</div>
+        </div>
 
-          <div class="ph-window">
-            <span class="ph-window-eyebrow">Context Window</span>
-            <div class="ph-window-items">
-              <div class="ph-window-item">Jira issue</div>
-              <div class="ph-window-item">Slack conversation</div>
-              <div class="ph-window-item">Documentation</div>
-              <div class="ph-window-item">Sentry</div>
-              <div class="ph-window-item">Sourcegraph</div>
-            </div>
-            <div class="ph-window-status">
-              <span class="ph-window-status-dot"></span>
-              <span>Precise code base context is foundational</span>
-            </div>
+        <div class="f-overlooked-item reveal reveal-d1">
+          <div class="f-overlooked-visual">
+            <svg width="72" height="52" viewBox="0 0 72 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4"  y="10" width="64" height="8" rx="2" fill="rgba(255,255,255,0.07)"/>
+              <rect x="4"  y="22" width="50" height="8" rx="2" fill="rgba(255,107,107,0.18)"/>
+              <rect x="4"  y="34" width="58" height="8" rx="2" fill="rgba(255,255,255,0.05)"/>
+              <circle cx="62" cy="26" r="6" fill="rgba(255,107,107,0.35)"/>
+              <text x="62" y="30" font-size="9" fill="rgba(255,107,107,0.9)" text-anchor="middle">!</text>
+            </svg>
           </div>
+          <div class="f-overlooked-num">02</div>
+          <div class="f-overlooked-title">Failure is subtle</div>
+          <div class="f-overlooked-desc">Poor context doesn't cause spectacular failures. It produces plausibly correct code that silently diverges — wrong assumptions, stale interfaces, missed conventions. Context poisoning rarely surfaces in code review.</div>
+        </div>
 
-          <div class="ph-connector ph-connector-handoff" aria-hidden="true">
-            <div class="ph-handoff-track">
-              <span class="ph-handoff-pulse"></span>
-            </div>
-            <span class="ph-handoff-label">before execution</span>
+        <div class="f-overlooked-item reveal reveal-d2">
+          <div class="f-overlooked-visual">
+            <svg width="88" height="52" viewBox="0 0 88 52" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="4"  y="34" width="16" height="12" rx="2" fill="rgba(255,194,71,0.5)"/>
+              <rect x="24" y="24" width="16" height="22" rx="2" fill="rgba(255,194,71,0.35)"/>
+              <rect x="44" y="14" width="16" height="32" rx="2" fill="rgba(255,194,71,0.2)"/>
+              <rect x="64" y="8"  width="16" height="38" rx="2" fill="rgba(255,107,107,0.1)"/>
+              <line x1="0" y1="46" x2="88" y2="46" stroke="rgba(255,255,255,0.12)" stroke-width="1"/>
+              <text x="72" y="6" font-size="7.5" fill="rgba(255,107,107,0.45)" text-anchor="middle">prod</text>
+              <text x="12" y="32" font-size="7" fill="rgba(255,194,71,0.5)" text-anchor="middle">eval</text>
+            </svg>
           </div>
+          <div class="f-overlooked-num">03</div>
+          <div class="f-overlooked-title">Benchmarks don't test this</div>
+          <div class="f-overlooked-desc">Standard LLM evals test isolated, self-contained problems. No benchmark measures cross-repository dependency reasoning at scale. Teams ship with high eval scores and find the gap only after the agent is in production.</div>
+        </div>
 
-          <div class="ph-agent">
-            <span class="ph-agent-eyebrow">Agent</span>
-            <strong class="ph-agent-heading">Executes</strong>
-            <p class="ph-agent-body">Agent starts executing with precise context.</p>
-            <span class="ph-agent-ring" aria-hidden="true"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CONTEXT POISONING (added insight)
+  ════════════════════════════════════════ -->
+  <section class="f-section factory-poison">
+    <div class="container">
+      <div class="factory-poison-layout">
+
+        <div class="reveal">
+          <div class="f-kicker" style="color: rgba(237,46,32,0.75);">The silent defect</div>
+          <h2 class="f-h2">Context poisoning</h2>
+          <p class="f-lead">Irrelevant context doesn't just dilute signal — it actively corrupts reasoning. When 80% of the window is noise, even the correct information gets overridden by what surrounds it.</p>
+          <p class="f-lead" style="margin-top: 1rem;">Ranking matters as much as retrieval. The right answer buried at position 8 of 10 results still produces the wrong code. An agent anchors to what it sees first.</p>
+          <p class="f-lead" style="margin-top: 1rem;">This is also a cost problem. A saturated context window increases latency and token cost on every single agent invocation — at factory scale, this compounds into a meaningful infrastructure burden.</p>
+        </div>
+
+        <div class="reveal reveal-d1">
+          <div style="font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-soft); margin-bottom: 0.7rem;">Context window contents</div>
+          <div class="poison-window">
+            <span class="poison-line">./src/legacy/auth_old.ts:34 — class OldAuth extends...</span>
+            <span class="poison-line">./tests/auth.test.ts:112 — describe('AuthService', () =></span>
+            <span class="poison-line">./vendor/sdk/auth.d.ts:445 — export class AuthService</span>
+            <span class="poison-line">./docs/deprecated/auth-v2.md:1 — # Deprecated AuthService</span>
+            <span class="poison-line-signal">./auth/interfaces/AuthService.ts:12 — interface AuthService ←</span>
+            <span class="poison-line">./src/auth/helpers/utils.ts:45 — export const authHelper...</span>
+            <span class="poison-line">./migrations/2023-auth-refactor.sql:1 — ALTER TABLE sessions...</span>
+            <span class="poison-line">./scripts/seed/mock-auth.ts:67 — const mockAuthService = ...</span>
+            <span class="poison-line">./src/legacy/auth_old.ts:234 — }; // end OldAuth</span>
+            <span class="poison-line">./vendor/legacy/v1/auth.js:1203 — module.exports = Auth</span>
+          </div>
+          <div class="poison-caption">
+            1 signal. 9 noise.<br>
+            Agent anchors to position 1 and writes against the wrong interface.
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════
+       CLOSE
+  ════════════════════════════════════════ -->
+  <section class="factory-close">
+    <div class="container">
+
+      <div class="factory-close-inner">
+
+      <!-- Inner / Outer Loop Animation -->
+      <div class="loops-visual reveal">
+        <svg viewBox="0 0 560 280" xmlns="http://www.w3.org/2000/svg" aria-label="Inner loop and outer loop diagram">
+          <defs>
+            <filter id="glowTeal" x="-60%" y="-60%" width="220%" height="220%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="glowGold" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+            <filter id="glowWhite" x="-80%" y="-80%" width="260%" height="260%">
+              <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="b"/>
+              <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+            </filter>
+          </defs>
+
+          <!-- ── Outer ellipse ── -->
+          <ellipse cx="280" cy="140" rx="215" ry="105"
+            stroke="rgba(255,194,71,0.18)" stroke-width="1" fill="none" stroke-dasharray="4 7"/>
+
+          <!-- ── Inner ellipse ── -->
+          <ellipse cx="280" cy="140" rx="98" ry="48"
+            stroke="rgba(255,255,255,0.1)" stroke-width="1" fill="none" stroke-dasharray="3 5"/>
+
+          <!-- ── Outer loop node markers ── -->
+          <!-- DEPLOY  θ=0°   (495,140) -->
+          <circle cx="495" cy="140" r="3" fill="rgba(255,194,71,0.55)"/>
+          <text x="503" y="144" font-family="monospace" font-size="8" fill="rgba(255,194,71,0.6)" letter-spacing="0.12em">DEPLOY</text>
+          <!-- OBSERVE θ=60°  (388,231) -->
+          <circle cx="388" cy="231" r="3" fill="rgba(255,194,71,0.55)"/>
+          <text x="388" y="246" text-anchor="middle" font-family="monospace" font-size="8" fill="rgba(255,194,71,0.6)" letter-spacing="0.12em">OBSERVE</text>
+          <!-- TICKET  θ=120° (172,231) -->
+          <circle cx="172" cy="231" r="3" fill="rgba(255,194,71,0.55)"/>
+          <text x="172" y="246" text-anchor="middle" font-family="monospace" font-size="8" fill="rgba(255,194,71,0.6)" letter-spacing="0.12em">TICKET</text>
+          <!-- AGENT RUN θ=180° (65,140) -->
+          <circle cx="65" cy="140" r="3" fill="rgba(255,194,71,0.55)"/>
+          <text x="57" y="136" text-anchor="end" font-family="monospace" font-size="8" fill="rgba(255,194,71,0.6)" letter-spacing="0.1em">AGENT</text>
+          <text x="57" y="147" text-anchor="end" font-family="monospace" font-size="8" fill="rgba(255,194,71,0.6)" letter-spacing="0.1em">RUN</text>
+          <!-- PR      θ=240° (172,49) -->
+          <circle cx="172" cy="49" r="3" fill="rgba(255,194,71,0.55)"/>
+          <text x="172" y="37" text-anchor="middle" font-family="monospace" font-size="8" fill="rgba(255,194,71,0.6)" letter-spacing="0.12em">PR</text>
+          <!-- REVIEW  θ=300° (388,49) -->
+          <circle cx="388" cy="49" r="3" fill="rgba(255,194,71,0.55)"/>
+          <text x="388" y="37" text-anchor="middle" font-family="monospace" font-size="8" fill="rgba(255,194,71,0.6)" letter-spacing="0.12em">REVIEW</text>
+
+          <!-- ── Inner loop node markers ── -->
+          <!-- GENERATE θ=270° top (280,92) -->
+          <circle cx="280" cy="92" r="3" fill="rgba(255,255,255,0.45)"/>
+          <text x="280" y="79" text-anchor="middle" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.4)" letter-spacing="0.1em">GENERATE</text>
+          <!-- TEST θ=0° right (378,140) -->
+          <circle cx="378" cy="140" r="3" fill="rgba(255,255,255,0.45)"/>
+          <text x="386" y="144" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.4)" letter-spacing="0.1em">TEST</text>
+          <!-- ITERATE θ=90° bottom (280,188) -->
+          <circle cx="280" cy="188" r="3" fill="rgba(255,255,255,0.45)"/>
+          <text x="280" y="202" text-anchor="middle" font-family="monospace" font-size="8" fill="rgba(255,255,255,0.4)" letter-spacing="0.1em">ITERATE</text>
+          <!-- CONTEXT θ=180° left (182,140) — highlighted -->
+          <circle class="loop-context-dot" cx="182" cy="140" r="5" fill="rgba(105,217,208,0.9)" filter="url(#glowTeal)"/>
+          <text x="172" y="135" text-anchor="end" font-family="monospace" font-size="8.5" fill="#69d9d0" letter-spacing="0.1em">CONTEXT</text>
+          <text x="172" y="147" text-anchor="end" font-family="monospace" font-size="6.5" fill="rgba(105,217,208,0.45)" letter-spacing="0.08em">SOURCEGRAPH MCP</text>
+
+          <!-- ── Agent center ── -->
+          <circle cx="280" cy="140" r="20" fill="rgba(255,194,71,0.04)" stroke="rgba(255,194,71,0.15)" stroke-width="1"/>
+          <text x="280" y="137" text-anchor="middle" font-family="monospace" font-size="7" fill="rgba(255,194,71,0.65)" letter-spacing="0.18em">AGENT</text>
+          <text x="280" y="149" text-anchor="middle" font-family="monospace" font-size="6" fill="rgba(255,255,255,0.22)" letter-spacing="0.12em">LLM</text>
+
+          <!-- ── Animated dots: outer loop (gold, clockwise, 20s) ── -->
+          <circle r="5.5" fill="rgba(255,194,71,0.95)" filter="url(#glowGold)">
+            <animateMotion dur="20s" repeatCount="indefinite"
+              path="M 495,140 A 215,105 0 1 1 65,140 A 215,105 0 1 1 495,140"/>
+          </circle>
+          <circle r="3.5" fill="rgba(255,194,71,0.4)">
+            <animateMotion dur="20s" begin="-10s" repeatCount="indefinite"
+              path="M 495,140 A 215,105 0 1 1 65,140 A 215,105 0 1 1 495,140"/>
+          </circle>
+
+          <!-- ── Animated dots: inner loop (white, clockwise, 7s) ── -->
+          <circle r="4.5" fill="rgba(255,255,255,0.88)" filter="url(#glowWhite)">
+            <animateMotion dur="7s" repeatCount="indefinite"
+              path="M 182,140 A 98,48 0 1 0 378,140 A 98,48 0 1 0 182,140"/>
+          </circle>
+          <circle r="3" fill="rgba(255,255,255,0.32)">
+            <animateMotion dur="7s" begin="-3.5s" repeatCount="indefinite"
+              path="M 182,140 A 98,48 0 1 0 378,140 A 98,48 0 1 0 182,140"/>
+          </circle>
+        </svg>
+
+        <div class="loops-legend">
+          <div class="loops-legend-item">
+            <span class="loops-dot loops-dot-outer"></span>
+            Outer loop · software delivery
+          </div>
+          <div class="loops-legend-item">
+            <span class="loops-dot loops-dot-inner"></span>
+            Inner loop · agent execution
           </div>
         </div>
       </div>
-    </section>
 
-    <section class="section section-compact" id="evaluation">
-      <div class="container">
-        <div class="section-header reveal">
-          <span class="eyebrow">Does the agent have the correct context?</span>
-        </div>
-
-        <div class="context-map reveal" aria-label="Context audit map">
-          <div class="context-map-intro">
-            <p class="lede">
-              A good answer depends on more than file access. It depends on reaching the real implementation, understanding impact, pulling the right history, and showing its work.
-            </p>
-          </div>
-
-          <div class="context-map-stage">
-            <div class="context-map-grid" aria-hidden="true"></div>
-            <div class="context-map-halo" aria-hidden="true"></div>
-            <span class="context-map-link context-map-link-a" aria-hidden="true"></span>
-            <span class="context-map-link context-map-link-b" aria-hidden="true"></span>
-            <span class="context-map-link context-map-link-c" aria-hidden="true"></span>
-            <span class="context-map-link context-map-link-d" aria-hidden="true"></span>
-
-            <div class="context-map-core">
-              <span class="context-map-core-kicker">Audit target</span>
-              <strong>Correct Context</strong>
-              <p>Real implementation, blast radius, evidence, and team history aligned before reasoning begins.</p>
-            </div>
-
-            <article class="context-probe context-probe-a">
-              <div class="context-probe-head">
-                <span class="context-probe-index">01</span>
-                <h3>Canonical implementation</h3>
-              </div>
-              <p>If the logic lives in a shared service or behind an interface, the agent still needs the real source of truth.</p>
-              <p class="context-probe-note">Find the actual implementation first.</p>
-            </article>
-
-            <article class="context-probe context-probe-b">
-              <div class="context-probe-head">
-                <span class="context-probe-index">02</span>
-                <h3>Blast radius</h3>
-              </div>
-              <p>The system should trace callers, downstream consumers, and migration risk across repository boundaries.</p>
-              <p class="context-probe-note">File access alone stops being enough here.</p>
-            </article>
-
-            <article class="context-probe context-probe-c">
-              <div class="context-probe-head">
-                <span class="context-probe-index">03</span>
-                <h3>Evidence trail</h3>
-              </div>
-              <p>A trustworthy answer points back to paths, symbols, references, or history instead of feeling magical.</p>
-              <p class="context-probe-note">A reviewer should be able to inspect how it knew.</p>
-            </article>
-
-            <article class="context-probe context-probe-d">
-              <div class="context-probe-head">
-                <span class="context-probe-index">04</span>
-                <h3>Precision, not volume</h3>
-              </div>
-              <p>The agent should surface the few artifacts that explain prior intent, ownership, and the existing team pattern.</p>
-              <p class="context-probe-note">Too much context is another form of failure.</p>
-            </article>
-          </div>
-        </div>
+      <div class="reveal">
+        <div class="factory-close-eyebrow">If you're building a software factory</div>
+        <h2 class="factory-close-title">
+          <span class="line-gold">Context</span>
+          <span class="line-white">is the</span>
+          <span class="line-dim">foundation.</span>
+        </h2>
+        <p class="factory-close-sub">Build context retrieval before you build the agent loop. Then test it — explicitly. Ask: when a task requires understanding code outside the immediate diff, does the agent retrieve the right parts?</p>
+        <a class="factory-cta" href="./mcp-guide.html">See how Sourcegraph MCP solves this →</a>
       </div>
-    </section>
 
-  </main>
+      </div><!-- /.factory-close-inner -->
+    </div>
+  </section>
 
   <script src="./assets/site.js"></script>
   <script>
-  (function () {
-    var diagram = document.querySelector('.prehydration-flow');
-    if (!diagram) return;
+    // Progress bar
+    const progress = document.querySelector('.page-progress');
+    if (progress) {
+      window.addEventListener('scroll', () => {
+        const pct = window.scrollY / (document.documentElement.scrollHeight - window.innerHeight);
+        progress.style.width = (pct * 100) + '%';
+      }, { passive: true });
+    }
 
-    var sources = diagram.querySelectorAll('.ph-source');
-    var items   = diagram.querySelectorAll('.ph-window-item');
-    var window_ = diagram.querySelector('.ph-window');
-    var gather  = diagram.querySelector('.ph-connector-gather');
-    var handoff = diagram.querySelector('.ph-connector-handoff');
-    var agent   = diagram.querySelector('.ph-agent');
-    var loadGroups = [
-      [0, 1, 2],
-      [3],
-      [4]
+    // Scroll reveal
+    const revealEls = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('is-visible'); });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    revealEls.forEach(el => revealObserver.observe(el));
+
+    // Context bar + grep animation (fires once when contrast section enters view)
+    let barsAnimated = false;
+    const contrastSection = document.querySelector('.factory-contrast-grid');
+    if (contrastSection) {
+      new IntersectionObserver((entries) => {
+        entries.forEach(e => {
+          if (e.isIntersecting && !barsAnimated) {
+            barsAnimated = true;
+            animateBars();
+            animateGrep();
+          }
+        });
+      }, { threshold: 0.25 }).observe(contrastSection);
+    }
+
+    function animateBars() {
+      const chaosEl     = document.getElementById('chaos-fill');
+      const chaosPct    = document.getElementById('chaos-pct');
+      const precisionEl = document.getElementById('precision-fill');
+      const precisionPct = document.getElementById('precision-pct');
+      if (!chaosEl || !precisionEl) return;
+
+      let c = 0, p = 0;
+      const cTarget = 93, pTarget = 17;
+      const tick = setInterval(() => {
+        if (c < cTarget) { c = Math.min(c + 2.1, cTarget); chaosEl.style.width = c + '%'; chaosPct.textContent = Math.round(c) + '%'; }
+        if (p < pTarget) { p = Math.min(p + 0.38, pTarget); precisionEl.style.width = p + '%'; precisionPct.textContent = Math.round(p) + '%'; }
+        if (c >= cTarget && p >= pTarget) clearInterval(tick);
+      }, 18);
+    }
+
+    const grepLines = [
+      'src/auth/middleware/auth.ts:12 — class AuthService {',
+      'src/legacy/oldAuth.ts:89 — // AuthService compat',
+      'src/api/handlers/auth.ts:34 — import { AuthService }',
+      'src/tests/auth.spec.ts:7 — describe("AuthService"',
+      'src/mobile/auth/AuthService.kt:1 — class AuthService {',
+      'src/vendor/sdk/auth.d.ts:445 — export class AuthService',
+      'docs/api/auth-service.md:3 — # AuthService',
+      'src/scripts/seed/mock.ts:67 — const mock = new Auth',
     ];
 
-    var STEP     = 1600;   // ms per source
-    var HOLD     = 2400;   // ms agent stays active before reset
-    var PAUSE    = 800;    // ms gap after reset before next cycle
-
-    function reset() {
-      sources.forEach(function (s) { s.classList.remove('is-active'); });
-      items.forEach(function (i)   { i.classList.remove('is-loaded'); });
-      if (window_) window_.classList.remove('is-ready');
-      if (gather)  gather.classList.remove('is-flowing');
-      if (handoff) handoff.classList.remove('is-active');
-      if (agent)   agent.classList.remove('is-active');
-    }
-
-    function cycle() {
-      reset();
-      var total = sources.length;
-
-      sources.forEach(function (source, i) {
-        setTimeout(function () {
-          sources.forEach(function (s) { s.classList.remove('is-active'); });
-          source.classList.add('is-active');
-          if (gather) gather.classList.add('is-flowing');
-          (loadGroups[i] || []).forEach(function (itemIndex) {
-            if (items[itemIndex]) items[itemIndex].classList.add('is-loaded');
+    function animateGrep() {
+      grepLines.forEach((line, i) => {
+        if (i >= 8) return;
+        setTimeout(() => {
+          const el = document.getElementById('g' + (i + 1));
+          if (!el) return;
+          el.style.opacity = '0';
+          el.textContent = line;
+          requestAnimationFrame(() => {
+            el.style.transition = 'opacity 0.18s';
+            el.style.opacity = '1';
           });
-        }, i * STEP);
+        }, i * 210);
       });
-
-      // Window ready
-      setTimeout(function () {
-        sources.forEach(function (s) { s.classList.remove('is-active'); });
-        if (window_) window_.classList.add('is-ready');
-        if (gather)  gather.classList.remove('is-flowing');
-        if (handoff) handoff.classList.add('is-active');
-      }, total * STEP);
-
-      // Agent activates
-      setTimeout(function () {
-        if (handoff) handoff.classList.remove('is-active');
-        if (agent)   agent.classList.add('is-active');
-      }, total * STEP + 800);
-
-      // Schedule next cycle
-      setTimeout(cycle, total * STEP + 800 + HOLD + PAUSE);
     }
-
-    setTimeout(cycle, 600);
-  })();
   </script>
 </body>
 </html>
